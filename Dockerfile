@@ -22,6 +22,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=9000
 ENV HOSTNAME=0.0.0.0
+ENV SHOW_DEMO_ACCOUNTS=true
 
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
