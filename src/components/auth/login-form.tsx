@@ -44,9 +44,10 @@ const DEMO_PASSWORD = "123456";
 
 type LoginFormProps = {
   showDemoAccounts?: boolean;
+  buildId?: string;
 };
 
-export function LoginForm({ showDemoAccounts = false }: LoginFormProps) {
+export function LoginForm({ showDemoAccounts = true, buildId }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -250,6 +251,11 @@ export function LoginForm({ showDemoAccounts = false }: LoginFormProps) {
 
         <p className="text-center text-[11px] text-gray-400 mt-6 max-w-md mx-auto">
           © {new Date().getFullYear()} بوابة الحداثة للتجارة العامة
+          {buildId && (
+            <span className="block mt-1 font-mono text-[10px] text-gray-300" dir="ltr">
+              build {buildId}
+            </span>
+          )}
         </p>
       </div>
     </div>

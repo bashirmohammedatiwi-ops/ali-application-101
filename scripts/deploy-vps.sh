@@ -9,19 +9,23 @@ if [ ! -f .env.production ]; then
   exit 1
 fi
 
-echo "=== Building (uses cache when possible — omit --no-cache unless needed) ==="
-docker compose build
+export APP_BUILD_ID=$(date +%Y%m%d%H%M%S)
 
-echo "=== Starting containers ==="
-docker compose up -d --remove-orphans
+echo "=== Build ID: $APP_BUILD_ID ==="
+echo "=== Building image ==="
+docker compose build --build-arg "APP_BUILD_ID=$APP_BUILD_ID"
+
+echo "=== Recreating container with new image ==="
+docker compose up -d --force-recreate --remove-orphans
 
 echo "=== Removing old unused images ==="
 docker image prune -f
 
 echo ""
+docker compose ps
 docker system df
 echo ""
-echo "App running at http://$(hostname -I 2>/dev/null | awk '{print $1}' || echo 'YOUR_SERVER'):9000"
+IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo 'YOUR_SERVER')
+echo "App: http://${IP}:9000/login"
+echo "Verify build footer shows: build $APP_BUILD_ID"
 echo "Logs: docker compose logs -f app"
-echo ""
-echo "If disk is still low, run: ./scripts/cleanup-docker.sh"

@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        APP_BUILD_ID: ${APP_BUILD_ID:-dev}
     container_name: modernity-gate
     ports:
       - "9000:9000"

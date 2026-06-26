@@ -9,12 +9,15 @@ COPY prisma.config.ts ./
 RUN npm ci --ignore-scripts && npm rebuild better-sqlite3 sharp
 
 FROM base AS builder
+ARG APP_BUILD_ID=dev
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV APP_BUILD_ID=$APP_BUILD_ID
 RUN npx prisma generate && npm run build
 
 FROM node:22-alpine AS runner
+ARG APP_BUILD_ID=dev
 RUN apk add --no-cache libc6-compat vips wget su-exec
 WORKDIR /app
 
@@ -23,6 +26,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=9000
 ENV HOSTNAME=0.0.0.0
 ENV SHOW_DEMO_ACCOUNTS=true
+ENV APP_BUILD_ID=$APP_BUILD_ID
 
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs

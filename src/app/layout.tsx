@@ -15,7 +15,7 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "بوابة الحداثة | Modernity Gate",
   description: "نظام إدارة طلبات الاستيراد من الصين",
-  manifest: "/manifest.json?v=20260626",
+  manifest: "/manifest.json?v=2026062612",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

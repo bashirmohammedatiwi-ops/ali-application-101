@@ -3,7 +3,7 @@ import { LoginForm } from "@/components/auth/login-form";
 export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
-  const showDemoAccounts = process.env.SHOW_DEMO_ACCOUNTS !== "false";
+  const buildId = process.env.APP_BUILD_ID ?? "dev";
 
-  return <LoginForm showDemoAccounts={showDemoAccounts} />;
+  return <LoginForm showDemoAccounts buildId={buildId} />;
 }
