@@ -58,9 +58,10 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="app-main safe-bottom animate-fade-in">
+        <main className="app-main animate-fade-in">
           <div className="app-content-width">{children}</div>
         </main>
+        <div className="mobile-nav-spacer lg:hidden" aria-hidden="true" />
       </div>
     </div>
   );

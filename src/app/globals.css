@@ -13,10 +13,18 @@
   --field-bg: #f5f6f8;
   --field-bg-focus: #ffffff;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --nav-height: 112px;
+  /* Bottom dock + FAB protrusion + browser chrome buffer */
+  --nav-height: 128px;
+  --nav-fab-lift: 22px;
   --sticky-bar-height: 92px;
-  --page-bottom: calc(var(--nav-height) + 24px + var(--safe-bottom));
-  --page-bottom-sticky: calc(var(--nav-height) + var(--sticky-bar-height) + 40px + var(--safe-bottom));
+  --page-bottom: max(
+    calc(var(--nav-height) + var(--nav-fab-lift) + 48px + var(--safe-bottom)),
+    180px
+  );
+  --page-bottom-sticky: max(
+    calc(var(--nav-height) + var(--nav-fab-lift) + var(--sticky-bar-height) + 48px + var(--safe-bottom)),
+    260px
+  );
   --radius-md: 16px;
   --radius-lg: 20px;
   --radius-xl: 24px;
@@ -44,6 +52,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-bottom: var(--page-bottom);
+  }
+}
+
 body {
   background: var(--brand-surface);
   color: var(--foreground);
@@ -65,6 +79,21 @@ button {
 
 .page-with-sticky-bar {
   padding-bottom: var(--page-bottom-sticky);
+}
+
+/* Physical spacer — reliable on iOS Safari over HTTP */
+.mobile-nav-spacer {
+  display: block;
+  height: var(--page-bottom);
+  min-height: 180px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .mobile-nav-spacer {
+    display: none;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -314,7 +343,7 @@ button {
 
 .sticky-action-bar {
   position: fixed;
-  bottom: calc(var(--nav-height) + 6px + var(--safe-bottom));
+  bottom: calc(var(--nav-height) + var(--nav-fab-lift) + 8px + var(--safe-bottom));
   inset-inline: 0;
   z-index: 40;
   padding-inline: max(20px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
@@ -555,9 +584,10 @@ button {
 
 .nav-dock-fab {
   flex: 0 0 auto;
-  margin-top: -22px;
+  margin-top: -18px;
   margin-inline: 2px;
-  padding-bottom: 0;
+  padding-bottom: 6px;
+  gap: 5px;
 }
 
 .nav-dock-fab-inner {
@@ -583,6 +613,8 @@ button {
 .nav-dock-fab .nav-dock-label {
   color: var(--brand-accent);
   font-weight: 800;
+  margin-top: 2px;
+  line-height: 1.2;
 }
 
 .nav-dock-label {
