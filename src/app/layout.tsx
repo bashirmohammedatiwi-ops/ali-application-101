@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import { Providers } from "@/components/providers/session-provider";
-import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -15,7 +14,7 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "بوابة الحداثة | Modernity Gate",
   description: "نظام إدارة طلبات الاستيراد من الصين",
-  manifest: "/manifest.json?v=2026062612",
+  manifest: "/manifest.json?v=2026062613",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -39,10 +38,7 @@ export default function RootLayout({
   return (
     <html lang="ar" suppressHydrationWarning>
       <body className={`${cairo.variable} antialiased`}>
-        <Providers>
-          {children}
-          <ServiceWorkerRegister />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

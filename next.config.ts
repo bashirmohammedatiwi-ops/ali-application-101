@@ -15,6 +15,28 @@ const nextConfig: NextConfig = {
     },
     optimizePackageImports: ["lucide-react", "date-fns"],
   },
+  async headers() {
+    return [
+      {
+        source: "/((?!_next/static|_next/image|favicon.ico|brand|uploads|icon.png|apple-icon.png|manifest.json|sw.js).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate",
+          },
+        ],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

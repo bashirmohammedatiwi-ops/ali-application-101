@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
@@ -109,18 +108,18 @@ export function AppNavigation({
     if (variant === "sidebar") {
       if (isFab) {
         return (
-          <Link
+          <a
             key={item.href}
             href={item.href}
             className={cn("app-sidebar-fab", active && "app-sidebar-fab--active")}
           >
             <Icon className="h-5 w-5" strokeWidth={2.5} />
             <span>{label}</span>
-          </Link>
+          </a>
         );
       }
       return (
-        <Link
+        <a
           key={item.href}
           href={item.href}
           className={cn("app-sidebar-link", active && "app-sidebar-link--active")}
@@ -131,12 +130,12 @@ export function AppNavigation({
             {badge != null && badge > 0 && <NavBadge count={badge} />}
           </span>
           <span className="flex-1 text-start truncate">{label}</span>
-        </Link>
+        </a>
       );
     }
 
     return (
-      <Link
+      <a
         key={item.href}
         href={item.href}
         className={cn(
@@ -157,7 +156,7 @@ export function AppNavigation({
           {badge != null && badge > 0 && <NavBadge count={badge} />}
         </span>
         <span className="nav-dock-label">{label}</span>
-      </Link>
+      </a>
     );
   }
 
@@ -165,7 +164,7 @@ export function AppNavigation({
     <>
       {/* Desktop / laptop sidebar */}
       <aside className="app-sidebar" aria-label={locale === "en" ? "Main navigation" : "التنقل الرئيسي"}>
-        <Link href="/dashboard" className="app-sidebar-brand">
+        <a href="/dashboard" className="app-sidebar-brand">
           <AppLogo size={40} className="h-10 w-10 shrink-0" />
           <div className="min-w-0">
             <p className="text-sm font-bold text-brand truncate">{t("appName", locale)}</p>
@@ -173,7 +172,7 @@ export function AppNavigation({
               {locale === "en" ? "Import orders" : "طلبات الاستيراد"}
             </p>
           </div>
-        </Link>
+        </a>
         <nav className="app-sidebar-nav">
           {items.map((item) => renderDockLink(item, "sidebar"))}
         </nav>

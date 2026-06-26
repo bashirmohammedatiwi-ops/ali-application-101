@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -65,7 +64,7 @@ export function MoreMenu({
               const badge = badges[item.href];
 
               return (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
                   onClick={onClose}
@@ -81,7 +80,7 @@ export function MoreMenu({
                     )}
                   </div>
                   <span className="text-sm font-semibold">{label}</span>
-                </Link>
+                </a>
               );
             })}
           </div>
