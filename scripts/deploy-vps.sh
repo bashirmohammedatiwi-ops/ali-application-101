@@ -9,10 +9,19 @@ if [ ! -f .env.production ]; then
   exit 1
 fi
 
+echo "=== Building (uses cache when possible — omit --no-cache unless needed) ==="
 docker compose build
-docker compose up -d
+
+echo "=== Starting containers ==="
+docker compose up -d --remove-orphans
+
+echo "=== Removing old unused images ==="
+docker image prune -f
 
 echo ""
+docker system df
+echo ""
 echo "App running at http://$(hostname -I 2>/dev/null | awk '{print $1}' || echo 'YOUR_SERVER'):9000"
-echo "First deploy: set SEED_ON_START=true in .env.production, then: docker compose up -d --force-recreate"
 echo "Logs: docker compose logs -f app"
+echo ""
+echo "If disk is still low, run: ./scripts/cleanup-docker.sh"
