@@ -1,4 +1,5 @@
 import type { Unit, Priority } from "@/generated/prisma/client";
+import { randomId } from "@/lib/utils";
 
 export type ProductFormData = {
   id: string;
@@ -24,7 +25,7 @@ export type CustomerFormData = {
 
 export function emptyProduct(): ProductFormData {
   return {
-    id: crypto.randomUUID(),
+    id: randomId(),
     productNameAr: "",
     quantity: "",
     unit: "PIECE",

@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Works on HTTP (non-secure) contexts where crypto.randomUUID may be unavailable. */
+export function randomId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      // non-secure context (HTTP)
+    }
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 export function formatCurrency(amount: number, currency = "USD") {
   const code = currency === "CNY" ? "CNY" : "USD";
   return new Intl.NumberFormat("en-US", {
