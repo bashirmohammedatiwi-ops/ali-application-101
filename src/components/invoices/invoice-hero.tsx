@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { UploadImage } from "@/components/ui/upload-image";
 import { StatusBadge, PriorityBadge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CURRENCY_LABELS } from "@/lib/currency";
@@ -41,12 +41,13 @@ export function InvoiceHero({ item, locale }: { item: HeroItem; locale: Locale }
       <div className="flex gap-4 items-start">
         {item.images[0] ? (
           <div className="shrink-0 w-20 h-20 rounded-2xl overflow-hidden border border-border bg-[var(--field-bg)]">
-            <Image
+            <UploadImage
               src={item.images[0].url}
               alt=""
               width={80}
               height={80}
               className="object-cover w-full h-full"
+              fallbackClassName="w-full h-full"
             />
           </div>
         ) : (

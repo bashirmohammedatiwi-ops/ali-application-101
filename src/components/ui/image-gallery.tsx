@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { UploadImage } from "@/components/ui/upload-image";
 import { Expand, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -60,7 +60,7 @@ export function ImageGallery({
               )}
               aria-label={locale === "en" ? "View full size" : "عرض بالحجم الكامل"}
             >
-              <Image
+              <UploadImage
                 src={item.url}
                 alt=""
                 width={px}
@@ -68,6 +68,7 @@ export function ImageGallery({
                 sizes={`${px}px`}
                 loading="lazy"
                 className="object-cover w-full h-full"
+                fallbackClassName={cn("rounded-2xl", sizeClass)}
               />
               <span className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/15 transition-colors" />
               <span className="absolute bottom-1.5 end-1.5 w-7 h-7 rounded-lg bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-90">
@@ -130,7 +131,7 @@ export function ImageThumbnail({
         className={cn("relative shrink-0 active:scale-[0.97] transition-transform", className)}
         aria-label={locale === "en" ? "View photo" : "عرض الصورة"}
       >
-        <Image
+        <UploadImage
           src={src}
           alt=""
           width={64}
@@ -138,6 +139,7 @@ export function ImageThumbnail({
           sizes="64px"
           loading="lazy"
           className="rounded-2xl object-cover w-16 h-16 ring-2 ring-white shadow-md"
+          fallbackClassName="rounded-2xl w-16 h-16 ring-2 ring-white shadow-md"
         />
         <span className="absolute bottom-1 end-1 w-5 h-5 rounded-md bg-black/40 text-white flex items-center justify-center">
           <Expand className="h-3 w-3" />

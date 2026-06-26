@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { UploadImage } from "@/components/ui/upload-image";
 import { PriorityBadge } from "@/components/ui/badge";
 import { UNITS } from "@/lib/constants";
 import { formatCurrency, formatDate, formatRelativeTime } from "@/lib/utils";
@@ -63,7 +63,7 @@ export function PricingQueueCard({
       <div className="flex gap-3.5 items-center">
         {item.images[0] ? (
           <div className="relative w-[68px] h-[68px] rounded-2xl overflow-hidden shrink-0 border border-border bg-[var(--field-bg)]">
-            <Image src={item.images[0].url} alt="" fill className="object-cover" sizes="68px" />
+            <UploadImage src={item.images[0].url} alt="" fill className="object-cover" sizes="68px" fallbackClassName="w-[68px] h-[68px] rounded-2xl" />
             {item.priority === "URGENT" && (
               <span className="absolute top-1 inset-inline-end-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
             )}

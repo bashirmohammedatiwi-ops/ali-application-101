@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { UploadImage } from "@/components/ui/upload-image";
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui/badge";
 import { UNITS } from "@/lib/constants";
@@ -44,7 +44,7 @@ export function PricerPricedHeader({ item, locale }: { item: PricedHeaderItem; l
         <div className="flex gap-4 items-start">
           {item.images[0] ? (
             <div className="relative w-20 h-20 rounded-2xl overflow-hidden shrink-0 border-2 border-white/25 shadow-lg">
-              <Image src={item.images[0].url} alt="" fill className="object-cover" sizes="80px" />
+              <UploadImage src={item.images[0].url} alt="" fill className="object-cover" sizes="80px" fallbackClassName="w-full h-full" />
             </div>
           ) : (
             <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/20 shrink-0 flex items-center justify-center">

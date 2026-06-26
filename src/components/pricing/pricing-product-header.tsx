@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { UploadImage } from "@/components/ui/upload-image";
 import Link from "next/link";
 import { PriorityBadge, StatusBadge } from "@/components/ui/badge";
 import { UNITS } from "@/lib/constants";
@@ -63,7 +63,7 @@ export function PricingProductHeader({
       <div className="flex gap-4 items-start">
         {item.images[0] ? (
           <div className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0 border-2 border-white shadow-md">
-            <Image src={item.images[0].url} alt="" fill className="object-cover" sizes="96px" />
+            <UploadImage src={item.images[0].url} alt="" fill className="object-cover" sizes="96px" fallbackClassName="w-full h-full" />
           </div>
         ) : (
           <div className="w-24 h-24 rounded-2xl bg-white/10 border border-white/15 shrink-0 flex items-center justify-center">

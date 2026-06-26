@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
     remotePatterns: [],
+    localPatterns: [
+      {
+        pathname: "/uploads/**",
+      },
+      {
+        pathname: "/brand/**",
+      },
+    ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
   },
