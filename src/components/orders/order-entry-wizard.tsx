@@ -186,7 +186,7 @@ export function OrderEntryWizard({
   const validProducts = products.filter((p) => p.productNameAr.trim());
 
   return (
-    <div className="page-with-sticky-bar">
+    <div>
       <StepIndicator steps={steps} current={step} />
 
       {/* Step 1: Customer */}

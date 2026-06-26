@@ -208,8 +208,10 @@ export function ListToolbar({ children }: { children: ReactNode }) {
 
 export function StickyActionBar({ children }: { children: ReactNode }) {
   return (
-    <div className="sticky-action-bar">
-      <div className="sticky-action-bar-inner space-y-2">{children}</div>
+    <div className="mt-6 pt-2">
+      <div className="rounded-2xl bg-white border border-border p-3 space-y-2 card-elevated">
+        {children}
+      </div>
     </div>
   );
 }

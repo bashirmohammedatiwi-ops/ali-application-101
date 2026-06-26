@@ -16,14 +16,9 @@
   /* Bottom dock + FAB protrusion + browser chrome buffer */
   --nav-height: 128px;
   --nav-fab-lift: 22px;
-  --sticky-bar-height: 92px;
   --page-bottom: max(
     calc(var(--nav-height) + var(--nav-fab-lift) + 48px + var(--safe-bottom)),
     180px
-  );
-  --page-bottom-sticky: max(
-    calc(var(--nav-height) + var(--nav-fab-lift) + var(--sticky-bar-height) + 48px + var(--safe-bottom)),
-    260px
   );
   --radius-md: 16px;
   --radius-lg: 20px;
@@ -77,10 +72,6 @@ button {
   padding-bottom: var(--page-bottom);
 }
 
-.page-with-sticky-bar {
-  padding-bottom: var(--page-bottom-sticky);
-}
-
 /* Physical spacer — reliable on iOS Safari over HTTP */
 .mobile-nav-spacer {
   display: block;
@@ -99,10 +90,6 @@ button {
 @media (min-width: 1024px) {
   .safe-bottom {
     padding-bottom: calc(28px + var(--safe-bottom));
-  }
-
-  .page-with-sticky-bar {
-    padding-bottom: calc(var(--sticky-bar-height) + 32px + var(--safe-bottom));
   }
 }
 
@@ -338,58 +325,6 @@ button {
 
   .detail-page-grid--single {
     grid-template-columns: 1fr;
-  }
-}
-
-.sticky-action-bar {
-  position: fixed;
-  bottom: calc(var(--nav-height) + var(--nav-fab-lift) + 8px + var(--safe-bottom));
-  inset-inline: 0;
-  z-index: 40;
-  padding-inline: max(20px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
-  padding-bottom: 8px;
-  pointer-events: none;
-}
-
-.sticky-action-bar-inner {
-  pointer-events: auto;
-  max-width: 100%;
-  margin-inline: auto;
-  border-radius: 20px;
-  background: rgb(255 255 255 / 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--brand-border);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 0.1);
-  padding: 12px;
-}
-
-@media (min-width: 640px) {
-  .sticky-action-bar-inner {
-    max-width: 640px;
-  }
-}
-
-@media (min-width: 768px) {
-  .sticky-action-bar-inner {
-    max-width: 768px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .sticky-action-bar {
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    padding-inline: calc(var(--sidebar-width, 260px) + 32px) 32px;
-  }
-
-  .sticky-action-bar-inner {
-    max-width: 900px;
-    margin-inline-start: 0;
-  }
-}
-
-@media (min-width: 1280px) {
-  .sticky-action-bar-inner {
-    max-width: 1040px;
   }
 }
 

@@ -193,7 +193,7 @@ export function InvoiceActions({
     isCny && hasPermission(role, "edit_markup") && item.status === "PRICED";
 
   return (
-    <div className={canArchive ? "space-y-5 page-with-sticky-bar" : "space-y-5 pb-4"}>
+    <div className={canArchive ? "space-y-5" : "space-y-5 pb-4"}>
       {/* Receipt breakdown */}
       <div className="invoice-receipt">
         <div className="invoice-receipt-header">
