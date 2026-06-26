@@ -13,7 +13,7 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "taker@modernitygate.com" },
-    update: {},
+    update: { passwordHash },
     create: {
       name: "مدخل الطلبات",
       email: "taker@modernitygate.com",
@@ -25,7 +25,7 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "pricer@modernitygate.com" },
-    update: {},
+    update: { passwordHash },
     create: {
       name: "Pricing Officer",
       email: "pricer@modernitygate.com",
@@ -37,7 +37,7 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "manager@modernitygate.com" },
-    update: {},
+    update: { passwordHash },
     create: {
       name: "المدير",
       email: "manager@modernitygate.com",

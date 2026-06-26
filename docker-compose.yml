@@ -12,6 +12,7 @@ services:
       PORT: 9000
       HOSTNAME: 0.0.0.0
       DATABASE_URL: file:/app/prisma/prod.db
+      SHOW_DEMO_ACCOUNTS: "true"
     volumes:
       - app-data:/app/prisma
       - uploads:/app/public/uploads

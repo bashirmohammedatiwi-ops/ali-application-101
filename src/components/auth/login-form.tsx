@@ -19,8 +19,6 @@ import {
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-const isDev = process.env.NODE_ENV === "development";
-
 const DEMO_ACCOUNTS = [
   {
     email: "taker@modernitygate.com",
@@ -44,7 +42,11 @@ const DEMO_ACCOUNTS = [
 
 const DEMO_PASSWORD = "123456";
 
-export function LoginForm() {
+type LoginFormProps = {
+  showDemoAccounts?: boolean;
+};
+
+export function LoginForm({ showDemoAccounts = false }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,14 +54,13 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function loginWithCredentials(accountEmail: string, accountPassword: string) {
     setLoading(true);
     setError("");
 
     const result = await signIn("credentials", {
-      email,
-      password,
+      email: accountEmail,
+      password: accountPassword,
       redirect: false,
     });
 
@@ -74,10 +75,15 @@ export function LoginForm() {
     router.refresh();
   }
 
-  function fillDemo(accountEmail: string) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await loginWithCredentials(email, password);
+  }
+
+  async function loginDemo(accountEmail: string) {
     setEmail(accountEmail);
     setPassword(DEMO_PASSWORD);
-    setError("");
+    await loginWithCredentials(accountEmail, DEMO_PASSWORD);
   }
 
   return (
@@ -203,7 +209,7 @@ export function LoginForm() {
           </form>
         </div>
 
-        {isDev && (
+        {showDemoAccounts && (
           <div className="mt-5 max-w-md mx-auto w-full animate-fade-in">
             <div className="rounded-2xl border border-border bg-white/80 backdrop-blur-sm p-4">
               <p className="font-bold text-brand text-sm mb-3 flex items-center gap-2">
@@ -218,7 +224,8 @@ export function LoginForm() {
                   <button
                     key={acc.email}
                     type="button"
-                    onClick={() => fillDemo(acc.email)}
+                    disabled={loading}
+                    onClick={() => loginDemo(acc.email)}
                     className={cn(
                       "login-dev-chip w-full text-start rounded-xl border px-3.5 py-2.5 flex items-center justify-between gap-2",
                       acc.color
