@@ -4,8 +4,9 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-# postinstall runs prisma generate — schema is copied in builder stage only
-RUN npm ci --ignore-scripts
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+RUN npm ci --ignore-scripts && npm rebuild better-sqlite3 sharp
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
