@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  ORDER_TAKER
+  PRICER
+  MANAGER
+}
+
+enum OrderStatus {
+  RECEIVED
+  PRICING
+  PRICED
+  ARCHIVED
+}
+
+enum Unit {
+  KILO
+  METER
+  PIECE
+  CARTON
+}
+
+enum Priority {
+  NORMAL
+  URGENT
+}
+
+enum Availability {
+  YES
+  NO
+  ALTERNATIVE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  language     String   @default("ar")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customerRequests CustomerRequest[]
+  pricedItems      OrderItem[]       @relation("PricedBy")
+  statusChanges    StatusHistory[]
+  sentInvoices     Invoice[]
+  auditLogs        AuditLog[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  whatsapp  String?
+  address   String?
+  city      String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requests CustomerRequest[]
+
+  @@index([phone])
+  @@index([name])
+}
+
+model CustomerRequest {
+  id          String   @id @default(cuid())
+  refNumber   String   @unique
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  source      String   @default("whatsapp")
+  notes       String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        String      @id @default(cuid())
+  refNumber String      @unique
+  requestId String
+  request   CustomerRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  status    OrderStatus @default(RECEIVED)
+  priority  Priority    @default(NORMAL)
+
+  productNameAr String
+  productNameEn String?
+  quantity      Float
+  unit          Unit
+  productLink   String?
+  notesAr       String?
+  notesEn       String?
+  specsJson     String?
+
+  unitPrice        Float?
+  currency         String        @default("USD")
+  internalShipping Float?
+  weightKg         Float?
+  lengthCm         Float?
+  widthCm          Float?
+  heightCm         Float?
+  volumeCbm        Float?
+  moq              Float?
+  leadTimeDays     Int?
+  pricerNotes      String?
+  available        Availability?
+  alternativeLink  String?
+
+  pricedAt           DateTime?
+  pricedById         String?
+  pricedBy           User?     @relation("PricedBy", fields: [pricedById], references: [id])
+  archivedAt         DateTime?
+  customerNotifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images        OrderImage[]
+  invoice       Invoice?
+  statusHistory StatusHistory[]
+
+  @@index([status])
+  @@index([status, updatedAt])
+  @@index([refNumber])
+  @@index([updatedAt])
+  @@index([productNameAr])
+  @@index([productNameEn])
+}
+
+model OrderImage {
+  id          String    @id @default(cuid())
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  url         String
+  filename    String
+  createdAt   DateTime  @default(now())
+}
+
+model Invoice {
+  id            String    @id @default(cuid())
+  invoiceNumber String    @unique
+  orderItemId   String    @unique
+  orderItem     OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  subtotal      Float
+  shipping      Float
+  markup        Float     @default(0)
+  extraFees     Float     @default(0)
+  grandTotal    Float
+  pdfPath       String?
+  sentAt        DateTime?
+  sentVia       String?
+  sentById      String?
+  sentBy        User?     @relation(fields: [sentById], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([invoiceNumber])
+  @@index([createdAt])
+}
+
+model StatusHistory {
+  id          String       @id @default(cuid())
+  orderItemId String
+  orderItem   OrderItem    @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  fromStatus  OrderStatus?
+  toStatus    OrderStatus
+  reason      String?
+  changedById String
+  changedBy   User         @relation(fields: [changedById], references: [id])
+  createdAt   DateTime     @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  details    String?
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model AppSettings {
+  id                String @id @default("default")
+  companyNameAr     String @default("بوابة الحداثة للتجارة العامة")
+  companyNameEn     String @default("Modernity Gate for General Trading")
+  usdToCnyRate      Float  @default(7.2)
+}
