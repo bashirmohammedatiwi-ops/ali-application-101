@@ -59,7 +59,7 @@ export function AppShell({
         </header>
 
         <main className="app-main safe-bottom animate-fade-in">
-          <div className="app-content-width page-container">{children}</div>
+          <div className="app-content-width">{children}</div>
         </main>
       </div>
     </div>

@@ -88,7 +88,7 @@ export function OrderEditForm({
   const BackChevron = locale === "ar" ? ChevronRight : ChevronLeft;
 
   return (
-    <div className="page-container pb-28">
+    <div className="page-container page-with-sticky-bar">
       <Link
         href={backHref}
         className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand -mb-2"

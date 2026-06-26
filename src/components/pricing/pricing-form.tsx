@@ -149,7 +149,7 @@ export function PricingForm({
   }
 
   return (
-    <div className="page-container pb-36 -mt-2">
+    <div className="page-container page-with-sticky-bar -mt-2">
       <PricingProductHeader
         item={item}
         locale={locale}
