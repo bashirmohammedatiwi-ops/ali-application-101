@@ -17,6 +17,10 @@ echo "=== Fix nginx + port 80 ==="
 sh "$(dirname "$0")/fix-nginx-port.sh"
 
 echo ""
+echo "=== Free port 9000 ==="
+sh "$(dirname "$0")/fix-port-9000.sh"
+
+echo ""
 echo "=== Build & start app ==="
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
 export APP_BUILD_ID=$(date +%Y%m%d%H%M%S)

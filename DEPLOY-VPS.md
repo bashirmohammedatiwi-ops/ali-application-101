@@ -28,6 +28,21 @@ git pull
 sudo sh scripts/resume-setup-traefik.sh
 ```
 
+إذا ظهر `address already in use` على المنفذ 9000:
+
+```bash
+sudo sh scripts/fix-port-9000.sh
+sudo sh scripts/resume-setup-traefik.sh
+```
+
+أو يدويًا:
+
+```bash
+sudo ss -tlnp | grep ':9000'
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker stop modernity-gate 2>/dev/null; docker rm modernity-gate 2>/dev/null
+```
+
 بريد certbot يجب أن يكون إيميل حقيقي (ليس `بريدك@example.com`):
 
 ```bash

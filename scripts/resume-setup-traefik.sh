@@ -18,6 +18,10 @@ if ! pgrep -x traefik >/dev/null 2>&1 && ! docker ps --format '{{.Names}}' 2>/de
   exit 1
 fi
 
+echo "=== Free port 9000 ==="
+sh "$SCRIPT_DIR/fix-port-9000.sh"
+
+echo ""
 echo "=== Build & start app (127.0.0.1:9000) ==="
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
 export APP_BUILD_ID=$(date +%Y%m%d%H%M%S)

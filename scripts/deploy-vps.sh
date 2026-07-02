@@ -37,6 +37,9 @@ fi
 
 docker compose $COMPOSE_FILES build $BUILD_FLAGS
 
+echo "=== Free port 9000 ==="
+sh "$(dirname "$0")/fix-port-9000.sh"
+
 echo "=== Recreating container ==="
 docker compose $COMPOSE_FILES up -d --force-recreate --remove-orphans
 
