@@ -59,7 +59,9 @@ done
 
 echo ""
 echo "=== 3) Install dynamic Traefik route + restart Traefik ==="
+sh "$SCRIPT_DIR/ensure-traefik.sh"
 sh "$SCRIPT_DIR/install-traefik-route.sh"
+TRAEFIK_CID=$(docker ps -q --filter "name=traefik" 2>/dev/null | head -1)
 if [ -n "$TRAEFIK_CID" ]; then
   docker restart "$TRAEFIK_CID"
   sleep 5

@@ -46,7 +46,13 @@ TRAEFIK_CID=$(docker ps -q --filter "name=traefik" 2>/dev/null | head -1)
 wait_for_app
 
 if [ -z "$TRAEFIK_CID" ]; then
-  echo "Traefik not running — local app check only (OK)"
+  echo "Traefik not running — starting..."
+  sh "$SCRIPT_DIR/ensure-traefik.sh"
+  TRAEFIK_CID=$(docker ps -q --filter "name=traefik" 2>/dev/null | head -1)
+fi
+
+if [ -z "$TRAEFIK_CID" ]; then
+  echo "Traefik not available — local app check only (OK)"
   exit 0
 fi
 

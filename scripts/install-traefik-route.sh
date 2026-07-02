@@ -13,16 +13,16 @@ HTTPS_ENTRYPOINT="${HTTPS_ENTRYPOINT:-$TRAEFIK_HTTPS_ENTRYPOINT}"
 
 TRAEFIK_CID=$(docker ps -q --filter "name=traefik" | head -1)
 if [ -z "$TRAEFIK_CID" ]; then
-  echo "Traefik container not running"
-  exit 1
+  echo "Traefik container not running — using host-network defaults"
+  NETMODE=host
+  TRAEFIK_NET=""
+else
+  if [ ! -d "$TRAEFIK_DIR" ]; then
+    TRAEFIK_DIR=$(docker inspect "$TRAEFIK_CID" --format '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}' 2>/dev/null || true)
+  fi
+  TRAEFIK_NET=$(docker inspect "$TRAEFIK_CID" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}' | head -1)
+  NETMODE=$(docker inspect "$TRAEFIK_CID" --format '{{.HostConfig.NetworkMode}}' 2>/dev/null || true)
 fi
-
-if [ ! -d "$TRAEFIK_DIR" ]; then
-  TRAEFIK_DIR=$(docker inspect "$TRAEFIK_CID" --format '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}' 2>/dev/null || true)
-fi
-
-TRAEFIK_NET=$(docker inspect "$TRAEFIK_CID" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}' | head -1)
-NETMODE=$(docker inspect "$TRAEFIK_CID" --format '{{.HostConfig.NetworkMode}}' 2>/dev/null || true)
 
 # Detect cert resolver name from Traefik static config if present
 if [ -d "$TRAEFIK_DIR" ] && [ "$CERT_RESOLVER" = "letsencrypt" ]; then
@@ -123,6 +123,6 @@ docker inspect "$TRAEFIK_CID" --format '{{range .Mounts}}{{.Source}} {{.Destinat
 [ -n "$INSTALLED" ] || echo "No dynamic directory found (Docker labels should be enough)"
 
 if [ -n "$INSTALLED" ] && [ -n "$TRAEFIK_CID" ]; then
-  echo "Reloading Traefik..."
-  docker kill -s HUP "$TRAEFIK_CID" 2>/dev/null || docker restart "$TRAEFIK_CID" 2>/dev/null || true
+  echo "Restarting Traefik to load routes..."
+  docker restart "$TRAEFIK_CID" 2>/dev/null || true
 fi
