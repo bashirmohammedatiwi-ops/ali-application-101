@@ -17,21 +17,38 @@ fi
 
 export APP_BUILD_ID=$(date +%Y%m%d%H%M%S)
 
-echo "=== Build ID: $APP_BUILD_ID ==="
-echo "=== Building image (no cache) ==="
-docker compose build --no-cache --build-arg "APP_BUILD_ID=$APP_BUILD_ID"
+echo ""
+echo "=== Disk before deploy ==="
+docker system df 2>/dev/null || true
+df -h / 2>/dev/null | tail -1 || true
+echo ""
 
-echo "=== Recreating container with new image ==="
+echo "=== Build ID: $APP_BUILD_ID ==="
+
+BUILD_FLAGS="--build-arg APP_BUILD_ID=$APP_BUILD_ID"
+if [ "${DEPLOY_NOCACHE:-}" = "1" ]; then
+  echo "=== Building image (--no-cache requested) ==="
+  BUILD_FLAGS="--no-cache $BUILD_FLAGS"
+else
+  echo "=== Building image (with cache — saves disk & time) ==="
+  echo "    Tip: DEPLOY_NOCACHE=1 ./scripts/deploy-vps.sh only if updates don't appear"
+fi
+
+docker compose build $BUILD_FLAGS
+
+echo "=== Recreating container ==="
 docker compose up -d --force-recreate --remove-orphans
 
-echo "=== Removing old unused images ==="
-docker image prune -f
+echo ""
+echo "=== Freeing disk after deploy ==="
+sh "$(dirname "$0")/cleanup-app-images.sh"
 
 echo ""
 docker compose ps
-docker system df
 echo ""
 IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo 'YOUR_SERVER')
 echo "App: http://${IP}:9000/login"
 echo "Verify build footer shows: build $APP_BUILD_ID"
+echo ""
+echo "If disk is still low: ./scripts/cleanup-docker.sh aggressive"
 echo "Logs: docker compose logs -f app"

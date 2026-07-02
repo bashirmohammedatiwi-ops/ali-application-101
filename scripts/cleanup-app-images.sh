@@ -1,23 +1,22 @@
 #!/usr/bin/env sh
-# Remove old ali-application-101 images after deploy (keeps the running one).
+# Remove old app images after deploy (keeps the running container's image).
 set -e
 
 cd "$(dirname "$0")/.."
 
-CURRENT=$(docker inspect modernity-gate --format '{{.Image}}' 2>/dev/null || true)
-if [ -z "$CURRENT" ]; then
-  echo "Container modernity-gate not running — start it first."
-  exit 1
+if ! docker inspect modernity-gate >/dev/null 2>&1; then
+  echo "Container modernity-gate not running — skip image cleanup."
+  exit 0
 fi
 
-echo "Current image: $CURRENT"
-echo "Removing old ali-application-101-app images (except running)..."
+RUNNING_ID=$(docker inspect modernity-gate --format '{{.Image}}')
+echo "Running image: ${RUNNING_ID#sha256:}"
 
-docker images ali-application-101-app --format '{{.ID}}' | while read -r id; do
-  if [ "$id" != "${CURRENT#sha256:}" ] && [ "sha256:$id" != "$CURRENT" ]; then
-    docker rmi "$id" 2>/dev/null && echo "Removed $id" || true
-  fi
-done
+echo "Removing unused images (keeps running container)..."
+docker image prune -a -f
 
-docker image prune -f
+# Remove dangling build layers
+docker builder prune -af --filter "until=2h" 2>/dev/null || docker builder prune -f
+
+echo ""
 docker system df
