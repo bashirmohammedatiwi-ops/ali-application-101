@@ -1,0 +1,16 @@
+# Traefik Docker labels (host-network Traefik — Hostinger VPS default)
+services:
+  app:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.modernitygate-http.rule=Host(`modernitygate.com`) || Host(`www.modernitygate.com`)
+      - traefik.http.routers.modernitygate-http.entrypoints=web
+      - traefik.http.routers.modernitygate-http.service=modernitygate
+      - traefik.http.routers.modernitygate.rule=Host(`modernitygate.com`) || Host(`www.modernitygate.com`)
+      - traefik.http.routers.modernitygate.entrypoints=websecure
+      - traefik.http.routers.modernitygate.tls=true
+      - traefik.http.routers.modernitygate.tls.certresolver=letsencrypt
+      - traefik.http.routers.modernitygate.tls.domains[0].main=modernitygate.com
+      - traefik.http.routers.modernitygate.tls.domains[0].sans=www.modernitygate.com
+      - traefik.http.routers.modernitygate.service=modernitygate
+      - traefik.http.services.modernitygate.loadbalancer.server.port=9000

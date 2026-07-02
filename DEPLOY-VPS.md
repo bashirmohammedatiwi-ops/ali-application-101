@@ -190,6 +190,33 @@ VPS_HOST=187.77.88.174 VPS_USER=root ./scripts/push-and-deploy.sh
 
 ---
 
+## 404 بعد النشر؟
+
+إذا ظهر `404 page not found` (نص بسيط من Traefik) بعد `./scripts/deploy-vps.sh`:
+
+```bash
+cd /opt/modernity-gate
+git pull
+sudo sh scripts/install-traefik-route.sh
+docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.traefik-net.yml up -d --force-recreate
+```
+
+أو أعد الإعداد الكامل:
+
+```bash
+sudo sh scripts/finalize-vps.sh
+```
+
+تحقق:
+
+```bash
+curl -I http://127.0.0.1:9000/login
+curl -skI https://modernitygate.com/login
+docker inspect modernity-gate --format '{{json .Config.Labels}}' | tr ',' '\n' | grep traefik
+```
+
+---
+
 ## 6) أوامر مفيدة
 
 ```bash
