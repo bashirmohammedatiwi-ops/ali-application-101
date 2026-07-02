@@ -31,6 +31,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "archive_order",
     "search_archive",
     "edit_priced_quantity",
+    "edit_markup",
   ],
   PRICER: [
     "price_order",
