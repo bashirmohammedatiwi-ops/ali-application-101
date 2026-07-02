@@ -2,8 +2,10 @@
 # Free 127.0.0.1:9000 before starting the app container.
 set -e
 
-APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
-COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APP_DIR="${APP_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+. "$SCRIPT_DIR/lib/compose-files.sh"
+COMPOSE_FILES=$(vps_compose_files)
 
 show_port_9000() {
   echo "=== What is using port 9000? ==="

@@ -1,0 +1,14 @@
+# VPS Traefik routing — committed so deploy never drops labels after recreate.
+# install-traefik-route.sh may regenerate this on bridge-network Traefik hosts.
+services:
+  app:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.modernitygate.rule=Host(`modernitygate.com`) || Host(`www.modernitygate.com`)
+      - traefik.http.routers.modernitygate.entrypoints=websecure
+      - traefik.http.routers.modernitygate.tls=true
+      - traefik.http.routers.modernitygate.tls.certresolver=letsencrypt
+      - traefik.http.routers.modernitygate.tls.domains[0].main=modernitygate.com
+      - traefik.http.routers.modernitygate.tls.domains[0].sans=www.modernitygate.com
+      - traefik.http.routers.modernitygate.service=modernitygate
+      - traefik.http.services.modernitygate.loadbalancer.server.port=9000

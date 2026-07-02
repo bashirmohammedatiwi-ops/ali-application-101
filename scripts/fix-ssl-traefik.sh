@@ -6,6 +6,7 @@ APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TRAEFIK_DIR="${TRAEFIK_DIR:-/docker/traefik}"
 DOMAIN="modernitygate.com"
+. "$SCRIPT_DIR/lib/compose-files.sh"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Run as root"
@@ -15,12 +16,7 @@ fi
 cd "$APP_DIR"
 
 resolve_compose() {
-  COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
-  if [ -f docker-compose.traefik-net.yml ]; then
-    COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.traefik-net.yml"
-  elif [ -f docker-compose.traefik.yml ]; then
-    COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.traefik.yml"
-  fi
+  COMPOSE_FILES=$(vps_compose_files)
 }
 
 echo "=== 1) DNS must point only to this VPS ==="

@@ -209,16 +209,17 @@ sudo sh scripts/fix-ssl-traefik.sh
 
 ## 404 بعد النشر؟
 
-إذا ظهر `404 page not found` (نص بسيط من Traefik) بعد `./scripts/deploy-vps.sh`:
+من الآن `./scripts/deploy-vps.sh` يتحقق تلقائياً من المسار و**يفشل النشر** إذا بقي 404، ويحاول إصلاحه ذاتياً.
+
+إذا ظهر 404 يدوياً:
 
 ```bash
 cd /opt/modernity-gate
 git pull
-sudo sh scripts/install-traefik-route.sh
-docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.traefik-net.yml up -d --force-recreate
+sudo sh scripts/verify-routing.sh
 ```
 
-أو أعد الإعداد الكامل:
+أو إعداد كامل:
 
 ```bash
 sudo sh scripts/finalize-vps.sh

@@ -34,6 +34,12 @@ TLS_DOMAIN_LABELS="
       - traefik.http.routers.modernitygate.tls.domains[0].main=${DOMAIN}
       - traefik.http.routers.modernitygate.tls.domains[0].sans=www.${DOMAIN}"
 
+NETWORK_LABEL=""
+if [ -n "$TRAEFIK_NET" ] && [ "$NETMODE" != "host" ]; then
+  NETWORK_LABEL="
+      - traefik.docker.network=${TRAEFIK_NET}"
+fi
+
 echo "Traefik network: ${TRAEFIK_NET:-none} (mode=$NETMODE)"
 echo "Cert resolver: $CERT_RESOLVER"
 
@@ -53,7 +59,7 @@ services:
       - traefik.http.routers.modernitygate.tls.certresolver=${CERT_RESOLVER}
 ${TLS_DOMAIN_LABELS}
       - traefik.http.routers.modernitygate.service=modernitygate
-      - traefik.http.services.modernitygate.loadbalancer.server.port=9000
+      - traefik.http.services.modernitygate.loadbalancer.server.port=9000${NETWORK_LABEL}
 networks:
   traefik:
     external: true
@@ -73,7 +79,7 @@ services:
       - traefik.http.routers.modernitygate.tls.certresolver=${CERT_RESOLVER}
 ${TLS_DOMAIN_LABELS}
       - traefik.http.routers.modernitygate.service=modernitygate
-      - traefik.http.services.modernitygate.loadbalancer.server.port=9000
+      - traefik.http.services.modernitygate.loadbalancer.server.port=9000${NETWORK_LABEL}
 EOF
   echo "Wrote docker-compose.traefik-net.yml (Docker labels, host Traefik)"
 fi
