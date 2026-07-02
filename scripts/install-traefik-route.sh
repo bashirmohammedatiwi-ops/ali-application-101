@@ -23,8 +23,16 @@ NETMODE=$(docker inspect "$TRAEFIK_CID" --format '{{.HostConfig.NetworkMode}}' 2
 # Detect cert resolver name from Traefik static config if present
 if [ -d "$TRAEFIK_DIR" ]; then
   FOUND=$(grep -rhoE 'certResolver:\s*[a-zA-Z0-9_.-]+' "$TRAEFIK_DIR" 2>/dev/null | awk '{print $2}' | head -1 || true)
+  if [ -z "$FOUND" ]; then
+    FOUND=$(grep -A20 'certificatesResolvers:' "$TRAEFIK_DIR"/traefik.yml "$TRAEFIK_DIR"/traefik.yaml 2>/dev/null \
+      | grep -E '^[[:space:]]+[a-zA-Z0-9_.-]+:' | head -1 | sed 's/[: ].*//;s/^[[:space:]]*//')
+  fi
   [ -n "$FOUND" ] && CERT_RESOLVER="$FOUND"
 fi
+
+TLS_DOMAIN_LABELS="
+      - traefik.http.routers.modernitygate.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.modernitygate.tls.domains[0].sans=www.${DOMAIN}"
 
 echo "Traefik network: ${TRAEFIK_NET:-none} (mode=$NETMODE)"
 echo "Cert resolver: $CERT_RESOLVER"
@@ -46,6 +54,7 @@ services:
       - traefik.http.routers.modernitygate.entrypoints=websecure
       - traefik.http.routers.modernitygate.tls=true
       - traefik.http.routers.modernitygate.tls.certresolver=${CERT_RESOLVER}
+${TLS_DOMAIN_LABELS}
       - traefik.http.routers.modernitygate.service=modernitygate
       - traefik.http.services.modernitygate.loadbalancer.server.port=9000
 networks:
@@ -68,6 +77,7 @@ services:
       - traefik.http.routers.modernitygate.entrypoints=websecure
       - traefik.http.routers.modernitygate.tls=true
       - traefik.http.routers.modernitygate.tls.certresolver=${CERT_RESOLVER}
+${TLS_DOMAIN_LABELS}
       - traefik.http.routers.modernitygate.service=modernitygate
       - traefik.http.services.modernitygate.loadbalancer.server.port=9000
 EOF
