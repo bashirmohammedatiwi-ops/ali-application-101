@@ -48,6 +48,18 @@ for dir in \
 done
 
 TRAEFIK_CID=$(docker ps -q --filter "name=traefik" 2>/dev/null | head -1)
+TRAEFIK_PID=$(pgrep -x traefik 2>/dev/null | head -1)
+
+if [ -n "$TRAEFIK_PID" ] && [ -z "$TRAEFIK_CID" ]; then
+  echo "Traefik runs on the host (pid $TRAEFIK_PID), not in Docker."
+  for dir in /etc/traefik/dynamic /etc/traefik/conf.d; do
+    install_to_host_dir "$dir"
+  done
+  if [ -n "$INSTALLED" ]; then
+    systemctl reload traefik 2>/dev/null || kill -HUP "$TRAEFIK_PID" 2>/dev/null || systemctl restart traefik 2>/dev/null || true
+  fi
+fi
+
 if [ -n "$TRAEFIK_CID" ]; then
   echo "Traefik container: $TRAEFIK_CID"
 
@@ -79,6 +91,8 @@ systemctl reload traefik 2>/dev/null || systemctl restart traefik 2>/dev/null ||
 if [ -z "$INSTALLED" ]; then
   echo ""
   echo "Could not find Traefik dynamic config folder automatically."
+  echo "Run diagnostics first:"
+  echo "  sudo sh scripts/find-traefik.sh"
   echo ""
   echo "Inspect Traefik mounts:"
   echo "  docker inspect \$(docker ps -q --filter name=traefik) --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{\"\\n\"}}{{end}}'"
