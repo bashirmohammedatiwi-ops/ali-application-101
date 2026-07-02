@@ -18,6 +18,20 @@
 
 ---
 
+## الحل النهائي (سيرفر Hostinger + Traefik)
+
+```bash
+cd /opt/modernity-gate
+git pull
+sudo sh scripts/finalize-vps.sh
+```
+
+يفعل كل شيء: التطبيق + Traefik + التوجيه + SSL.
+
+إذا فشل HTTPS: في Hostinger أوقف CDN واجعل A record يشير لـ IP السيرفر (`curl -4 ifconfig.me`).
+
+---
+
 ## Traefik موجود على السيرفر (Hostinger وغيره)
 
 إذا ظهر `traefik-traefik-1` أو المسار `/docker/traefik` — **استخدم Traefik** (لديه Let's Encrypt مدمج).

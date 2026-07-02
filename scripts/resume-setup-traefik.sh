@@ -13,8 +13,11 @@ fi
 
 cd "$APP_DIR"
 
-if ! pgrep -x traefik >/dev/null 2>&1 && ! docker ps --format '{{.Names}}' 2>/dev/null | grep -qi traefik; then
-  echo "Traefik not detected — use: sudo sh scripts/resume-setup.sh"
+if ! pgrep -x traefik >/dev/null 2>&1 \
+  && ! docker ps --format '{{.Names}}' 2>/dev/null | grep -qi traefik \
+  && [ ! -d /docker/traefik ]; then
+  echo "Traefik not found — use: sudo sh scripts/finalize-vps.sh"
+  echo "Or nginx mode: sudo sh scripts/resume-setup.sh"
   exit 1
 fi
 
