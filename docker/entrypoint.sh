@@ -10,9 +10,11 @@ echo "[entrypoint] Applying database migrations..."
 cd /opt/prisma
 su-exec nextjs node ./node_modules/prisma/build/index.js migrate deploy
 
-if [ "${SEED_ON_START:-false}" = "true" ] || [ "${SHOW_DEMO_ACCOUNTS:-false}" = "true" ]; then
+if [ "${SEED_ON_START:-false}" = "true" ]; then
   echo "[entrypoint] Seeding database..."
-  su-exec nextjs node ./node_modules/tsx/dist/cli.mjs prisma/seed.ts
+  if ! su-exec nextjs node ./node_modules/tsx/dist/cli.mjs prisma/seed.ts; then
+    echo "[entrypoint] WARN: seed failed — starting app anyway (set SEED_ON_START=false if DB is already seeded)"
+  fi
 fi
 
 echo "[entrypoint] Starting app on port ${PORT:-9000}..."

@@ -9,7 +9,7 @@ APP_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
   prisma tsx bcryptjs dotenv @prisma/adapter-better-sqlite3 better-sqlite3
 
 cd "$APP_ROOT"
-for pkg in zeptomatch valibot @prisma; do
+for pkg in zeptomatch valibot @prisma @esbuild; do
   if [ ! -e "$DEST/$pkg" ] && [ -e "node_modules/$pkg" ]; then
     mkdir -p "$(dirname "$DEST/$pkg")"
     cp -a "node_modules/$pkg" "$DEST/$pkg"
