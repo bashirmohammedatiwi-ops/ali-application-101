@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Copy,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { SectionCard } from "@/components/ui/card";
 import { ActionTile, StickyActionBar } from "@/components/ui/action-tile";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -31,7 +32,7 @@ import { UNITS } from "@/lib/constants";
 import { openInvoicePdf } from "@/lib/open-invoice-pdf";
 import { buildWhatsAppMessage, formatCurrency } from "@/lib/utils";
 import { calculateMarkupAmount, formatMarkupPercent } from "@/lib/markup";
-import { cnyToUsd, usdToIqd, iqdToUsd } from "@/lib/currency";
+import { cnyToUsd, usdToIqd, iqdToUsd, CURRENCIES, CURRENCY_LABELS, normalizeCurrency, type AppCurrency } from "@/lib/currency";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { t, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/toast";
@@ -96,6 +97,13 @@ export function InvoiceActions({
   const [repricingOpen, setRepricingOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfCurrency, setPdfCurrency] = useState<AppCurrency>(
+    normalizeCurrency(item.currency)
+  );
+
+  useEffect(() => {
+    setPdfCurrency(normalizeCurrency(item.currency));
+  }, [item.currency]);
 
   const invoice = item.invoice;
   const unitLabel = UNITS[item.unit][locale === "en" ? "en" : "ar"];
@@ -140,7 +148,7 @@ export function InvoiceActions({
   function handleOpenPdf() {
     if (!invoice || pdfLoading) return;
     setPdfLoading(true);
-    openInvoicePdf(invoice.id, invoice.invoiceNumber, invoice.updatedAt)
+    openInvoicePdf(invoice.id, invoice.invoiceNumber, invoice.updatedAt, pdfCurrency)
       .catch(() => toast(t("error", locale), "error"))
       .finally(() => setPdfLoading(false));
   }
@@ -354,6 +362,18 @@ export function InvoiceActions({
       )}
 
       <SectionTitle title={t("actions", locale)} />
+      <div className="space-y-1.5">
+        <Select
+          label={t("pdfCurrency", locale)}
+          value={pdfCurrency}
+          onChange={(e) => setPdfCurrency(normalizeCurrency(e.target.value))}
+          options={CURRENCIES.map((c) => ({
+            value: c,
+            label: CURRENCY_LABELS[c][locale === "en" ? "en" : "ar"],
+          }))}
+        />
+        <p className="text-[11px] text-gray-400">{t("pdfCurrencyHint", locale)}</p>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <ActionTile
           icon={pdfLoading ? Loader2 : Download}

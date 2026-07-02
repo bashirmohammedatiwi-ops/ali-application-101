@@ -8,12 +8,14 @@ import { getOrCreateSettings } from "@/lib/orders";
 import { UNITS } from "@/lib/constants";
 import { resolveLogoPath, resolveProductImageForPdf } from "@/lib/pdf-assets";
 import { registerPdfFonts } from "@/lib/pdf-fonts";
+import { normalizeCurrency } from "@/lib/currency";
+import { prepareInvoiceForPdfDisplay } from "@/lib/pdf-invoice";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
@@ -43,16 +45,24 @@ export async function GET(
     const settings = await getOrCreateSettings();
     const item = invoice.orderItem;
     const customer = item.request.customer;
+    const displayCurrency = normalizeCurrency(
+      new URL(req.url).searchParams.get("currency") ?? item.currency
+    );
+    const rates = {
+      usdToCnyRate: settings.usdToCnyRate,
+      usdToIqdRate: settings.usdToIqdRate,
+    };
+    const pdfData = prepareInvoiceForPdfDisplay(invoice, item, displayCurrency, rates);
     const productImageSrc = await resolveProductImageForPdf(item.images);
     const logoSrc = resolveLogoPath();
 
     const buffer = await renderToBuffer(
       InvoiceDocument({
-        invoice,
-        item,
+        invoice: pdfData.invoice,
+        item: pdfData.item,
         customer,
         settings,
-        unitLabel: UNITS[item.unit].ar,
+        unitLabel: UNITS[pdfData.item.unit].ar,
         logoSrc,
         productImageSrc,
       })

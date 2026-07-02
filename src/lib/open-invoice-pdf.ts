@@ -4,10 +4,14 @@ import { PDF_TEMPLATE_VERSION } from "@/lib/pdf-constants";
 export async function openInvoicePdf(
   invoiceId: string,
   invoiceNumber: string,
-  updatedAt: Date | string
+  updatedAt: Date | string,
+  displayCurrency?: string
 ) {
   const stamp = new Date(updatedAt).getTime();
-  const url = `/api/invoices/${invoiceId}/pdf?tpl=${PDF_TEMPLATE_VERSION}&u=${stamp}&_=${Date.now()}`;
+  const currencyParam = displayCurrency
+    ? `&currency=${encodeURIComponent(displayCurrency)}`
+    : "";
+  const url = `/api/invoices/${invoiceId}/pdf?tpl=${PDF_TEMPLATE_VERSION}&u=${stamp}${currencyParam}&_=${Date.now()}`;
 
   const res = await fetch(url, {
     cache: "no-store",
