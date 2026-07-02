@@ -349,7 +349,7 @@ export function InvoiceActions({
           icon={Download}
           label="PDF"
           sublabel={locale === "en" ? "Download" : "تحميل"}
-          href={`/api/invoices/${invoice.id}/pdf`}
+          href={`/api/invoices/${invoice.id}/pdf?v=${new Date(invoice.updatedAt).getTime()}`}
           external
         />
         <ActionTile

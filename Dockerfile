@@ -14,7 +14,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV APP_BUILD_ID=$APP_BUILD_ID
-RUN npx prisma generate && npm run build
+RUN echo "APP_BUILD_ID=$APP_BUILD_ID" && npx prisma generate && npm run build
 
 FROM node:22-alpine AS runner
 ARG APP_BUILD_ID=dev

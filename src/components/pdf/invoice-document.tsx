@@ -9,7 +9,7 @@ import {
 import type { Invoice, OrderItem, Customer, AppSettings } from "@/generated/prisma/client";
 import { BRAND } from "@/lib/constants";
 import { calculateMarkupAmount, formatMarkupPercent } from "@/lib/markup";
-import { registerPdfFonts } from "@/lib/pdf-fonts";
+import { registerPdfFonts, PDF_FONT_FAMILY } from "@/lib/pdf-fonts";
 import {
   formatPdfAmount,
   formatPdfDate,
@@ -17,6 +17,10 @@ import {
 } from "@/lib/pdf-format";
 
 registerPdfFonts();
+
+export const PDF_TEMPLATE_VERSION = "2026-07-v2";
+
+const fontFamily = PDF_FONT_FAMILY;
 
 const C = {
   primary: BRAND.primary,
@@ -34,7 +38,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 36,
     paddingHorizontal: 36,
-    fontFamily: "NotoArabic",
+    fontFamily,
     fontSize: 10,
     color: C.primary,
     direction: "rtl",
@@ -518,6 +522,9 @@ export function InvoiceDocument({
           </Text>
           <Text style={styles.footerNote}>
             {companyName} · واتساب: {BRAND.whatsapp}
+          </Text>
+          <Text style={[styles.footerNote, { marginTop: 6, fontSize: 7, textAlign: "center" }]}>
+            {PDF_TEMPLATE_VERSION}
           </Text>
         </View>
       </Page>

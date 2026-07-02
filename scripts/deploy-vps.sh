@@ -9,11 +9,17 @@ if [ ! -f .env.production ]; then
   exit 1
 fi
 
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "=== Pulling latest code ==="
+  git pull --ff-only
+  echo "Commit: $(git log -1 --oneline)"
+fi
+
 export APP_BUILD_ID=$(date +%Y%m%d%H%M%S)
 
 echo "=== Build ID: $APP_BUILD_ID ==="
-echo "=== Building image ==="
-docker compose build --build-arg "APP_BUILD_ID=$APP_BUILD_ID"
+echo "=== Building image (no cache) ==="
+docker compose build --no-cache --build-arg "APP_BUILD_ID=$APP_BUILD_ID"
 
 echo "=== Recreating container with new image ==="
 docker compose up -d --force-recreate --remove-orphans
