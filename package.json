@@ -11,10 +11,10 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "postinstall": "prisma generate",
-    "docker:build": "docker compose build",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f app"
+    "docker:build": "docker compose -f docker-compose.yml -f docker-compose.local.yml build",
+    "docker:up": "docker compose -f docker-compose.yml -f docker-compose.local.yml up -d",
+    "docker:down": "docker compose -f docker-compose.yml -f docker-compose.local.yml down",
+    "docker:logs": "docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f app"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

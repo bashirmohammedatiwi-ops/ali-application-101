@@ -6,8 +6,7 @@ services:
       args:
         APP_BUILD_ID: ${APP_BUILD_ID:-dev}
     container_name: modernity-gate
-    ports:
-      - "9000:9000"
+    # Ports: use docker-compose.local.yml (dev) or docker-compose.prod.yml (VPS)
     env_file:
       - .env.production
     environment:

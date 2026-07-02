@@ -1,0 +1,5 @@
+# Local Docker: expose app on all interfaces
+services:
+  app:
+    ports:
+      - "9000:9000"
