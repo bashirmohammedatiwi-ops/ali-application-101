@@ -75,6 +75,8 @@ GOOGLE_TRANSLATE_API_KEY=""  # اختياري
 
 ## الإنتاج
 
+راجع **[DEPLOY-VPS.md](./DEPLOY-VPS.md)** لنشر على VPS مع الدومين وشهادة SSL.
+
 ```bash
 npm run build
 npm start

@@ -3,6 +3,8 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+
 if [ ! -f .env.production ]; then
   cp .env.production.example .env.production
   echo "Created .env.production — edit AUTH_SECRET and NEXTAUTH_URL before continuing."
@@ -30,25 +32,21 @@ if [ "${DEPLOY_NOCACHE:-}" = "1" ]; then
   echo "=== Building image (--no-cache requested) ==="
   BUILD_FLAGS="--no-cache $BUILD_FLAGS"
 else
-  echo "=== Building image (with cache — saves disk & time) ==="
-  echo "    Tip: DEPLOY_NOCACHE=1 ./scripts/deploy-vps.sh only if updates don't appear"
+  echo "=== Building image (with cache) ==="
 fi
 
-docker compose build $BUILD_FLAGS
+docker compose $COMPOSE_FILES build $BUILD_FLAGS
 
 echo "=== Recreating container ==="
-docker compose up -d --force-recreate --remove-orphans
+docker compose $COMPOSE_FILES up -d --force-recreate --remove-orphans
 
 echo ""
 echo "=== Freeing disk after deploy ==="
 sh "$(dirname "$0")/cleanup-app-images.sh"
 
 echo ""
-docker compose ps
+docker compose $COMPOSE_FILES ps
 echo ""
-IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo 'YOUR_SERVER')
-echo "App: http://${IP}:9000/login"
-echo "Verify build footer shows: build $APP_BUILD_ID"
-echo ""
-echo "If disk is still low: ./scripts/cleanup-docker.sh aggressive"
-echo "Logs: docker compose logs -f app"
+echo "App: ${NEXTAUTH_URL:-https://modernitygate.com}"
+echo "Verify login footer shows: build $APP_BUILD_ID"
+echo "Logs: docker compose $COMPOSE_FILES logs -f app"

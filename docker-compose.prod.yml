@@ -1,0 +1,7 @@
+# Production overrides: app only on localhost (nginx terminates SSL)
+services:
+  app:
+    ports:
+      - "127.0.0.1:9000:9000"
+    environment:
+      SHOW_DEMO_ACCOUNTS: "${SHOW_DEMO_ACCOUNTS:-false}"
