@@ -30,10 +30,10 @@ fi
 . "$SCRIPT_DIR/traefik-detect-env.sh" --print
 echo ""
 
+sh "$SCRIPT_DIR/ensure-traefik.sh"
 TRAEFIK_CID=$(docker ps -q --filter "name=traefik" 2>/dev/null | head -1)
-if [ -z "$TRAEFIK_CID" ]; then
-  echo "ERROR: Traefik container not running."
-  echo "  sudo sh scripts/start-traefik-stack.sh"
+if [ -z "$TRAEFIK_CID" ] && ! pgrep -x traefik >/dev/null 2>&1; then
+  echo "ERROR: Traefik still not running after ensure-traefik."
   exit 1
 fi
 
@@ -60,8 +60,10 @@ done
 echo ""
 echo "=== 3) Install dynamic Traefik route + restart Traefik ==="
 sh "$SCRIPT_DIR/install-traefik-route.sh"
-docker restart "$TRAEFIK_CID"
-sleep 5
+if [ -n "$TRAEFIK_CID" ]; then
+  docker restart "$TRAEFIK_CID"
+  sleep 5
+fi
 
 echo ""
 echo "=== 4) Verify public HTTPS ==="

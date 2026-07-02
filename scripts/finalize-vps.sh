@@ -31,18 +31,7 @@ systemctl disable nginx 2>/dev/null || true
 
 echo ""
 echo "=== 3) Start Traefik ==="
-if [ ! -d "$TRAEFIK_DIR" ]; then
-  TRAEFIK_DIR=$(docker inspect traefik-traefik-1 --format '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}' 2>/dev/null || true)
-fi
-if [ -z "$TRAEFIK_DIR" ] || [ ! -d "$TRAEFIK_DIR" ]; then
-  echo "ERROR: Traefik not found at $TRAEFIK_DIR"
-  exit 1
-fi
-(cd "$TRAEFIK_DIR" && docker compose up -d)
-sleep 2
-
-TRAEFIK_CID=$(docker ps -q --filter "name=traefik" | head -1)
-echo "Traefik: $TRAEFIK_CID"
+sh "$SCRIPT_DIR/ensure-traefik.sh"
 
 echo ""
 echo "=== 4) Traefik routing (Docker labels) ==="
