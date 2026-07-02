@@ -42,37 +42,23 @@ fi
 sleep 2
 
 TRAEFIK_CID=$(docker ps -q --filter "name=traefik" | head -1)
-TRAEFIK_NET=$(docker inspect "$TRAEFIK_CID" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{"\n"}}{{end}}' | head -1)
-NETMODE=$(docker inspect "$TRAEFIK_CID" --format '{{.HostConfig.NetworkMode}}' 2>/dev/null || true)
-echo "Traefik: $TRAEFIK_CID (network=$TRAEFIK_NET mode=$NETMODE)"
+echo "Traefik: $TRAEFIK_CID"
 
 echo ""
-echo "=== 4) Build & start app ==="
-sh "$SCRIPT_DIR/fix-port-9000.sh"
+echo "=== 4) Traefik routing (Docker labels) ==="
+sh "$SCRIPT_DIR/install-traefik-route.sh"
+COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.traefik-net.yml"
 
-# Join Traefik docker network so Traefik can reach modernity-gate:9000
-if [ -n "$TRAEFIK_NET" ] && [ "$NETMODE" != "host" ]; then
-  cat > "$APP_DIR/docker-compose.traefik-net.yml" <<EOF
-services:
-  app:
-    ports: !reset []
-    networks:
-      - traefik
-networks:
-  traefik:
-    external: true
-    name: ${TRAEFIK_NET}
-EOF
-  COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.traefik-net.yml"
-  echo "App will join network: $TRAEFIK_NET"
-fi
+echo ""
+echo "=== 5) Build & start app ==="
+sh "$SCRIPT_DIR/fix-port-9000.sh"
 
 export APP_BUILD_ID=$(date +%Y%m%d%H%M%S)
 docker compose $COMPOSE_FILES build --build-arg "APP_BUILD_ID=$APP_BUILD_ID"
 docker compose $COMPOSE_FILES up -d --force-recreate
 
 echo ""
-echo "=== 5) Wait for app ==="
+echo "=== 6) Wait for app ==="
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
   if curl -sf http://127.0.0.1:9000/login >/dev/null 2>&1 \
     || docker exec modernity-gate wget -qO- http://127.0.0.1:9000/login >/dev/null 2>&1; then
@@ -87,59 +73,36 @@ for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
   sleep 3
 done
 
-echo ""
-echo "=== 6) Install Traefik route ==="
-ROUTE_FILE="$APP_DIR/deploy/traefik/modernitygate.generated.yml"
-sh "$SCRIPT_DIR/write-traefik-route.sh" "$ROUTE_FILE"
-
-INSTALLED=""
-for dir in "$TRAEFIK_DIR/etc/traefik/dynamic" "$TRAEFIK_DIR/dynamic" /etc/traefik/dynamic; do
-  if [ -d "$dir" ]; then
-    cp "$ROUTE_FILE" "$dir/modernitygate.yml"
-    echo "Installed: $dir/modernitygate.yml"
-    INSTALLED=1
-    break
-  fi
-done
-
-if [ -z "$INSTALLED" ] && [ -n "$TRAEFIK_CID" ]; then
-  for dest in /etc/traefik/dynamic /dynamic; do
-    if docker exec "$TRAEFIK_CID" test -d "$dest" 2>/dev/null; then
-      docker cp "$ROUTE_FILE" "$TRAEFIK_CID:$dest/modernitygate.yml"
-      echo "Installed in container: $dest/modernitygate.yml"
-      INSTALLED=1
-      break
-    fi
-  done
-fi
-
-docker restart "$TRAEFIK_CID" 2>/dev/null || true
-sleep 3
+sleep 5
 
 echo ""
 echo "=== 7) Verify ==="
 docker compose $COMPOSE_FILES ps
 echo ""
+docker inspect modernity-gate --format '{{json .Config.Labels}}' 2>/dev/null | tr ',' '\n' | grep traefik || true
+echo ""
 ss -tlnp | grep -E ':80 |:443 |:9000 ' || true
 echo ""
 echo "Local app:"
-curl -sI http://127.0.0.1:9000/login | head -3
+curl -sI http://127.0.0.1:9000/login 2>/dev/null | head -3 \
+  || docker exec modernity-gate wget -qS -O /dev/null http://127.0.0.1:9000/login 2>&1 | head -3
 echo ""
-echo "Public HTTP:"
-curl -sI "http://$DOMAIN/login" 2>/dev/null | head -5 || true
+echo "Via Traefik (Host header):"
+curl -sI -H "Host: $DOMAIN" http://127.0.0.1/login 2>/dev/null | head -5 || true
 echo ""
 echo "Public HTTPS:"
 curl -skI "https://$DOMAIN/login" 2>/dev/null | head -8 || true
 
 echo ""
 echo "=============================================="
-if curl -skf "https://$DOMAIN/login" >/dev/null 2>&1; then
+if curl -skf "https://$DOMAIN/login" 2>/dev/null | grep -qi 'modernity\|authjs\|login'; then
   echo " DONE: https://$DOMAIN/login"
+elif curl -skI "https://$DOMAIN/login" 2>/dev/null | grep -q '200\|302'; then
+  echo " DONE: https://$DOMAIN/login (HTTP 200/302)"
 else
-  echo " App runs locally. If HTTPS fails:"
-  echo "  - Hostinger: disable CDN, A record -> $(curl -4 -s --max-time 5 ifconfig.me 2>/dev/null || echo 'VPS_IP')"
-  echo "  - Wait 10 min, re-run: sudo sh scripts/finalize-vps.sh"
-  echo "  - Check: docker logs $TRAEFIK_CID --tail 50"
+  echo " Traefik 404? Check:"
+  echo "   docker logs $TRAEFIK_CID --tail 50"
+  echo "   docker inspect modernity-gate --format '{{json .Config.Labels}}'"
 fi
 echo " Login: manager@modernitygate.com / 123456"
 echo " After login: set SEED_ON_START=false in .env.production"
