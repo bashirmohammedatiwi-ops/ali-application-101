@@ -2,17 +2,18 @@ import fs from "fs";
 import path from "path";
 
 const root = path.join(process.cwd(), "node_modules");
+const queue = process.argv.slice(2);
+
+if (queue.length === 0) {
+  console.error("usage: list-package-deps.mjs <package> [package...]");
+  process.exit(1);
+}
+
 const seen = new Set();
-const queue = ["puppeteer-core"];
 
 function pkgDir(name) {
-  if (name.startsWith("@")) {
-    const p = path.join(root, name);
-    return fs.existsSync(p) ? p : null;
-  }
   const direct = path.join(root, name);
-  if (fs.existsSync(direct)) return direct;
-  return null;
+  return fs.existsSync(direct) ? direct : null;
 }
 
 while (queue.length > 0) {

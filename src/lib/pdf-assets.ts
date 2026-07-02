@@ -3,7 +3,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 
-/** Absolute filesystem path for react-pdf (PNG/JPEG logos). */
+/** Absolute filesystem path for a public asset (PNG/JPEG logos). */
 export function resolvePublicAsset(src?: string | null): string | null {
   if (!src) return null;
   if (src.startsWith("http://") || src.startsWith("https://")) return src;

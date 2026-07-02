@@ -18,16 +18,22 @@ RUN echo "APP_BUILD_ID=$APP_BUILD_ID" && npx prisma generate && npm run build
 
 FROM base AS puppeteer-runtime
 COPY --from=deps /app/node_modules ./node_modules
-COPY docker/list-puppeteer-deps.mjs ./docker/list-puppeteer-deps.mjs
-COPY docker/stage-puppeteer-modules.sh ./docker/stage-puppeteer-modules.sh
-RUN chmod +x docker/stage-puppeteer-modules.sh && ./docker/stage-puppeteer-modules.sh /puppeteer-modules
+COPY docker/list-package-deps.mjs docker/stage-package-modules.sh docker/stage-puppeteer-modules.sh ./docker/
+RUN chmod +x docker/stage-puppeteer-modules.sh docker/stage-package-modules.sh \
+  && ./docker/stage-puppeteer-modules.sh /puppeteer-modules
+
+FROM base AS prisma-runtime
+COPY --from=deps /app/node_modules ./node_modules
+COPY docker/list-package-deps.mjs docker/stage-package-modules.sh ./docker/
+RUN chmod +x docker/stage-package-modules.sh \
+  && ./docker/stage-package-modules.sh /prisma-modules \
+    prisma tsx bcryptjs dotenv @prisma/adapter-better-sqlite3 better-sqlite3
 
 FROM node:22-alpine AS runner
 ARG APP_BUILD_ID=dev
 RUN apk add --no-cache \
     libc6-compat vips wget su-exec \
-    chromium nss freetype harfbuzz ca-certificates ttf-freefont \
-    udev dbus mesa-gbm alsa-lib
+    chromium nss freetype harfbuzz ca-certificates ttf-freefont
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -59,8 +65,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/sharp ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@img ./node_modules/@img
 COPY --from=puppeteer-runtime --chown=nextjs:nodejs /puppeteer-modules/ ./node_modules/
 
-# Full Prisma CLI tree for migrate deploy + optional seed
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules /opt/prisma/node_modules
+# Prisma migrate/seed only — not the full node_modules tree (~900MB saved)
+COPY --from=prisma-runtime --chown=nextjs:nodejs /prisma-modules/ /opt/prisma/node_modules/
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts /opt/prisma/
 COPY --from=builder --chown=nextjs:nodejs /app/prisma /opt/prisma/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/package.json /opt/prisma/
