@@ -4,7 +4,7 @@ import { shapeArabicText } from "@/lib/pdf-arabic";
 
 type PdfTextProps = Omit<TextProps, "children"> & {
   children?: ReactNode;
-  /** Set false for pure Latin/numbers when bidi causes issues */
+  /** false for invoice codes, amounts, pure Latin */
   shape?: boolean;
 };
 
@@ -16,8 +16,22 @@ function flattenText(children: ReactNode): string {
   return String(children);
 }
 
-export function PdfText({ children, shape = true, ...props }: PdfTextProps) {
+function withDirection(
+  style: TextProps["style"],
+  rtl: boolean
+): TextProps["style"] {
+  const dir = { direction: rtl ? ("rtl" as const) : ("ltr" as const) };
+  if (!style) return dir;
+  if (Array.isArray(style)) return [dir, ...style];
+  return [dir, style];
+}
+
+export function PdfText({ children, shape = true, style, ...props }: PdfTextProps) {
   const raw = flattenText(children);
   const content = shape ? shapeArabicText(raw) : raw;
-  return <Text {...props}>{content}</Text>;
+  return (
+    <Text {...props} style={withDirection(style, shape)}>
+      {content}
+    </Text>
+  );
 }

@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     paddingHorizontal: 28,
     paddingTop: 0,
+    direction: "rtl",
   },
 
   /* ── Header band ── */
@@ -269,10 +270,20 @@ type InvoiceDocProps = {
 };
 
 function SpecPill({ label, value }: { label: string; value: string }) {
+  const numMatch = value.match(/^(\d+(?:\.\d+)?)\s*(.+)$/);
   return (
     <View style={styles.specPill}>
       <PdfText style={styles.specLabel}>{label}</PdfText>
-      <PdfText style={styles.specValue}>{value}</PdfText>
+      {numMatch ? (
+        <View style={{ flexDirection: "row-reverse", gap: 2 }}>
+          <PdfText style={styles.specValue}>{numMatch[2]}</PdfText>
+          <PdfText style={styles.specValue} shape={false}>
+            {numMatch[1]}
+          </PdfText>
+        </View>
+      ) : (
+        <PdfText style={styles.specValue}>{value}</PdfText>
+      )}
     </View>
   );
 }
@@ -324,7 +335,12 @@ export function InvoiceDocument({
           <View style={styles.headerCenter}>
             <PdfText style={styles.companyName}>{companyName}</PdfText>
             <PdfText style={styles.companySub}>{companyAddress}</PdfText>
-            <PdfText style={styles.companySub}>{`هاتف: ${companyPhone}`}</PdfText>
+            <View style={{ flexDirection: "row-reverse", gap: 2 }}>
+              <PdfText style={styles.companySub}>هاتف:</PdfText>
+              <PdfText style={styles.companySub} shape={false}>
+                {companyPhone}
+              </PdfText>
+            </View>
           </View>
           <View style={styles.titleBadge}>
             <PdfText style={styles.titleBadgeText}>فاتورة تسعير</PdfText>
@@ -336,7 +352,9 @@ export function InvoiceDocument({
         <View style={styles.chipsRow}>
           <View style={styles.chip}>
             <PdfText style={styles.chipLabel}>رقم الفاتورة</PdfText>
-            <PdfText style={styles.chipValue}>{invoice.invoiceNumber}</PdfText>
+            <PdfText style={styles.chipValue} shape={false}>
+              {invoice.invoiceNumber}
+            </PdfText>
           </View>
           <View style={styles.chip}>
             <PdfText style={styles.chipLabel}>التاريخ</PdfText>
@@ -344,7 +362,9 @@ export function InvoiceDocument({
           </View>
           <View style={styles.chip}>
             <PdfText style={styles.chipLabel}>رقم الطلب</PdfText>
-            <PdfText style={styles.chipValue}>{item.refNumber}</PdfText>
+            <PdfText style={styles.chipValue} shape={false}>
+              {item.refNumber}
+            </PdfText>
           </View>
           <View style={styles.chip}>
             <PdfText style={styles.chipLabel}>العملة</PdfText>
@@ -360,7 +380,9 @@ export function InvoiceDocument({
           </View>
           <View style={styles.customerField}>
             <PdfText style={styles.customerLabel}>رقم الهاتف</PdfText>
-            <PdfText style={styles.customerValue}>{customer.phone}</PdfText>
+            <PdfText style={styles.customerValue} shape={false}>
+              {customer.phone}
+            </PdfText>
           </View>
           {customerLocation ? (
             <View style={[styles.customerField, { flex: 1.4 }]}>
@@ -392,11 +414,18 @@ export function InvoiceDocument({
               )}
             </View>
             <PdfText style={[styles.tdBold, styles.colName]}>{productName}</PdfText>
-            <PdfText style={[styles.td, styles.colQty]}>
-              {`${item.quantity} ${unitLabel}`}
+            <View style={[styles.colQty, { flexDirection: "row-reverse", justifyContent: "center", gap: 3 }]}>
+              <PdfText style={styles.td}>{unitLabel}</PdfText>
+              <PdfText style={styles.td} shape={false}>
+                {String(item.quantity)}
+              </PdfText>
+            </View>
+            <PdfText style={[styles.td, styles.colUnit]} shape={false}>
+              {fmt(item.unitPrice ?? 0)}
             </PdfText>
-            <PdfText style={[styles.td, styles.colUnit]}>{fmt(item.unitPrice ?? 0)}</PdfText>
-            <PdfText style={[styles.tdBold, styles.colSum]}>{fmt(invoice.subtotal)}</PdfText>
+            <PdfText style={[styles.tdBold, styles.colSum]} shape={false}>
+              {fmt(invoice.subtotal)}
+            </PdfText>
           </View>
         </View>
 
@@ -413,7 +442,10 @@ export function InvoiceDocument({
                   <SpecPill label="الحجم" value={`${item.volumeCbm} م³`} />
                 )}
                 {item.moq != null && (
-                  <SpecPill label="الحد الأدنى" value={`${item.moq} ${unitLabel}`} />
+                  <SpecPill
+                    label="الحد الأدنى"
+                    value={`${item.moq} ${unitLabel}`}
+                  />
                 )}
                 {item.leadTimeDays != null && (
                   <SpecPill label="التجهيز" value={`${item.leadTimeDays} يوم`} />
@@ -431,11 +463,15 @@ export function InvoiceDocument({
             <PdfText style={styles.boxTitle}>ملخص المبالغ</PdfText>
             <View style={styles.totalRow}>
               <PdfText style={styles.totalLbl}>تكلفة المنتج</PdfText>
-              <PdfText style={styles.totalVal}>{fmt(invoice.subtotal)}</PdfText>
+              <PdfText style={styles.totalVal} shape={false}>
+                {fmt(invoice.subtotal)}
+              </PdfText>
             </View>
             <View style={styles.totalRow}>
               <PdfText style={styles.totalLbl}>أجور الشحن الداخلي</PdfText>
-              <PdfText style={styles.totalVal}>{`+ ${fmt(invoice.shipping)}`}</PdfText>
+              <PdfText style={styles.totalVal} shape={false}>
+                {`+ ${fmt(invoice.shipping)}`}
+              </PdfText>
             </View>
             <View style={styles.totalRow}>
               <PdfText style={styles.totalLbl}>
@@ -443,13 +479,18 @@ export function InvoiceDocument({
                   ? `عمولة المكتب (${formatMarkupPercent(invoice.markup)})`
                   : "عمولة المكتب"}
               </PdfText>
-              <PdfText style={[styles.totalVal, invoice.markup > 0 ? { color: C.accent } : {}]}>
+              <PdfText
+                style={[styles.totalVal, invoice.markup > 0 ? { color: C.accent } : {}]}
+                shape={false}
+              >
                 {invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—"}
               </PdfText>
             </View>
             <View style={styles.grandBox}>
               <PdfText style={styles.grandLbl}>الإجمالي النهائي</PdfText>
-              <PdfText style={styles.grandVal}>{fmt(invoice.grandTotal)}</PdfText>
+              <PdfText style={styles.grandVal} shape={false}>
+                {fmt(invoice.grandTotal)}
+              </PdfText>
             </View>
           </View>
         </View>
@@ -457,9 +498,14 @@ export function InvoiceDocument({
         {/* Footer */}
         <View style={styles.footer}>
           <PdfText style={styles.thankYou}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</PdfText>
-          <PdfText style={styles.footerNote}>
-            {`الأسعار لا تشمل الشحن الدولي · ${companyName} · هاتف: ${companyPhone}`}
-          </PdfText>
+          <View style={{ flexDirection: "row-reverse", justifyContent: "center", flexWrap: "wrap" }}>
+            <PdfText style={styles.footerNote}>
+              {`الأسعار لا تشمل الشحن الدولي · ${companyName} · هاتف: `}
+            </PdfText>
+            <PdfText style={styles.footerNote} shape={false}>
+              {companyPhone}
+            </PdfText>
+          </View>
         </View>
       </Page>
     </Document>
