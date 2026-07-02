@@ -26,10 +26,9 @@ RUN chmod +x docker/stage-puppeteer-modules.sh docker/stage-package-modules.sh \
 FROM base AS prisma-runtime
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
-COPY docker/list-package-deps.mjs docker/resolve-package-dir.mjs docker/stage-package-modules.sh ./docker/
-RUN chmod +x docker/stage-package-modules.sh \
-  && ./docker/stage-package-modules.sh /prisma-modules \
-    prisma tsx bcryptjs dotenv @prisma/adapter-better-sqlite3 better-sqlite3
+COPY docker/list-package-deps.mjs docker/resolve-package-dir.mjs docker/stage-package-modules.sh docker/stage-prisma-modules.sh ./docker/
+RUN chmod +x docker/stage-package-modules.sh docker/stage-prisma-modules.sh \
+  && ./docker/stage-prisma-modules.sh /prisma-modules
 
 FROM node:22-alpine AS runner
 ARG APP_BUILD_ID=dev
