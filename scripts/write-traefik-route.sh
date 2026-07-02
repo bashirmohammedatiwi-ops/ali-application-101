@@ -40,11 +40,6 @@ mkdir -p "$(dirname "$OUT")"
 cat > "$OUT" <<EOF
 http:
   routers:
-    modernitygate-http:
-      rule: Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
-      entryPoints:
-        - web
-      service: modernitygate-app
     modernitygate:
       rule: Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
       entryPoints:

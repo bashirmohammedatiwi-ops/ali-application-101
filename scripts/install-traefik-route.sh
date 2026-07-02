@@ -47,9 +47,6 @@ services:
       - traefik
     labels:
       - traefik.enable=true
-      - traefik.http.routers.modernitygate-http.rule=Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
-      - traefik.http.routers.modernitygate-http.entrypoints=web
-      - traefik.http.routers.modernitygate-http.service=modernitygate
       - traefik.http.routers.modernitygate.rule=Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
       - traefik.http.routers.modernitygate.entrypoints=websecure
       - traefik.http.routers.modernitygate.tls=true
@@ -70,9 +67,6 @@ services:
   app:
     labels:
       - traefik.enable=true
-      - traefik.http.routers.modernitygate-http.rule=Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
-      - traefik.http.routers.modernitygate-http.entrypoints=web
-      - traefik.http.routers.modernitygate-http.service=modernitygate
       - traefik.http.routers.modernitygate.rule=Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
       - traefik.http.routers.modernitygate.entrypoints=websecure
       - traefik.http.routers.modernitygate.tls=true

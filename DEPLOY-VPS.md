@@ -190,6 +190,23 @@ VPS_HOST=187.77.88.174 VPS_USER=root ./scripts/push-and-deploy.sh
 
 ---
 
+## غير آمن (Not Secure) في المتصفح؟
+
+Traefik يحتاج Let's Encrypt. على السيرفر:
+
+```bash
+cd /opt/modernity-gate
+git pull
+sudo sh scripts/fix-ssl-traefik.sh
+```
+
+تأكد في Hostinger:
+- A record فقط → `187.77.88.174` (احذف `2.57.91.91`)
+- CDN مغلق
+- افتح **https://**modernitygate.com (ليس http)
+
+---
+
 ## 404 بعد النشر؟
 
 إذا ظهر `404 page not found` (نص بسيط من Traefik) بعد `./scripts/deploy-vps.sh`:
