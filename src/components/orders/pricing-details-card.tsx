@@ -2,7 +2,7 @@ import { SectionCard } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { parseSpecs, specsToNotes } from "@/lib/specs";
 import { UNITS } from "@/lib/constants";
-import { CURRENCY_LABELS } from "@/lib/currency";
+import { CURRENCY_LABELS, toAppCurrency } from "@/lib/currency";
 import { t, type Locale } from "@/lib/i18n";
 import type { OrderItem } from "@/generated/prisma/client";
 import {
@@ -47,7 +47,7 @@ export function PricingDetailsCard({
   if (!item.unitPrice) return null;
 
   const unitLabel = UNITS[item.unit][locale === "en" ? "en" : "ar"];
-  const currencyKey = item.currency === "CNY" ? "CNY" : "USD";
+  const currencyKey = toAppCurrency(item.currency);
   const currencyLabel = CURRENCY_LABELS[currencyKey][locale === "en" ? "en" : "ar"];
   const specs = parseSpecs(item.specsJson);
   const specsText = specsToNotes(specs, locale);

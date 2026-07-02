@@ -30,7 +30,7 @@ import {
 import { UNITS } from "@/lib/constants";
 import { buildWhatsAppMessage, formatCurrency } from "@/lib/utils";
 import { calculateMarkupAmount, formatMarkupPercent } from "@/lib/markup";
-import { cnyToUsd } from "@/lib/currency";
+import { cnyToUsd, usdToIqd, iqdToUsd } from "@/lib/currency";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { t, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/toast";
@@ -78,11 +78,13 @@ export function InvoiceActions({
   locale,
   role,
   usdToCnyRate,
+  usdToIqdRate,
 }: {
   item: InvoiceItem;
   locale: Locale;
   role: Role;
   usdToCnyRate: number;
+  usdToIqdRate: number;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -98,6 +100,8 @@ export function InvoiceActions({
   const customer = item.request.customer;
   const whatsappPhone = customer.whatsapp || customer.phone;
   const isCny = item.currency === "CNY";
+  const isUsd = item.currency === "USD";
+  const isIqd = item.currency === "IQD";
 
   function getWhatsAppMessage() {
     if (!invoice || !item.unitPrice) return "";
@@ -183,6 +187,13 @@ export function InvoiceActions({
 
   const markupAmount = calculateMarkupAmount(invoice.subtotal, invoice.shipping, invoice.markup);
   const usdEquivalent = isCny ? cnyToUsd(invoice.grandTotal, usdToCnyRate) : null;
+  const iqdEquivalent =
+    isUsd
+      ? usdToIqd(invoice.grandTotal, usdToIqdRate)
+      : isCny && usdEquivalent != null
+        ? usdToIqd(usdEquivalent, usdToIqdRate)
+        : null;
+  const usdFromIqd = isIqd ? iqdToUsd(invoice.grandTotal, usdToIqdRate) : null;
 
   const canArchive = item.status === "PRICED" && hasPermission(role, "archive_order");
   const canEdit = canEditOrder(role, item.status);
@@ -276,6 +287,34 @@ export function InvoiceActions({
                   )}
                 </Button>
               )}
+            </div>
+          </div>
+        )}
+
+        {iqdEquivalent != null && (
+          <div className="mx-4 mb-4 rounded-2xl bg-emerald-50 border border-emerald-200/60 px-4 py-3.5">
+            <div>
+              <p className="text-xs font-semibold text-gray-500">{t("iqdEquivalent", locale)}</p>
+              <p className="text-xl font-black text-emerald-700 tabular-nums mt-0.5">
+                {formatCurrency(iqdEquivalent, "IQD")}
+              </p>
+              <p className="text-[10px] text-gray-400 mt-1" dir="ltr">
+                1 USD = {usdToIqdRate.toLocaleString()} IQD
+              </p>
+            </div>
+          </div>
+        )}
+
+        {usdFromIqd != null && (
+          <div className="mx-4 mb-4 rounded-2xl bg-accent-light/60 border border-accent/15 px-4 py-3.5">
+            <div>
+              <p className="text-xs font-semibold text-gray-500">{t("cnyEquivalent", locale)}</p>
+              <p className="text-xl font-black text-accent tabular-nums mt-0.5">
+                {formatCurrency(usdFromIqd, "USD")}
+              </p>
+              <p className="text-[10px] text-gray-400 mt-1" dir="ltr">
+                1 USD = {usdToIqdRate.toLocaleString()} IQD
+              </p>
             </div>
           </div>
         )}

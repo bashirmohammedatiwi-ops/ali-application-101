@@ -54,6 +54,7 @@ export function AdminPanel({
   });
   const [appSettings, setAppSettings] = useState({
     usdToCnyRate: String(settings?.usdToCnyRate ?? 7.2),
+    usdToIqdRate: String(settings?.usdToIqdRate ?? 1310),
   });
 
   function handleCreateUser() {
@@ -68,6 +69,7 @@ export function AdminPanel({
     startTransition(async () => {
       await updateSettings({
         usdToCnyRate: parseFloat(appSettings.usdToCnyRate) || 7.2,
+        usdToIqdRate: parseFloat(appSettings.usdToIqdRate) || 1310,
       });
       router.refresh();
     });
@@ -89,6 +91,18 @@ export function AdminPanel({
             value={appSettings.usdToCnyRate}
             onChange={(e) =>
               setAppSettings({ ...appSettings, usdToCnyRate: e.target.value })
+            }
+            dir="ltr"
+          />
+          <Input
+            label={t("exchangeRateIqd", locale)}
+            hint={t("exchangeRateIqdHint", locale)}
+            type="number"
+            step="1"
+            min="0"
+            value={appSettings.usdToIqdRate}
+            onChange={(e) =>
+              setAppSettings({ ...appSettings, usdToIqdRate: e.target.value })
             }
             dir="ltr"
           />

@@ -1,7 +1,7 @@
 import { UploadImage } from "@/components/ui/upload-image";
 import { StatusBadge, PriorityBadge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { CURRENCY_LABELS } from "@/lib/currency";
+import { CURRENCY_LABELS, toAppCurrency } from "@/lib/currency";
 import { UNITS } from "@/lib/constants";
 import { t, type Locale } from "@/lib/i18n";
 import type { OrderItem, Invoice, OrderImage } from "@/generated/prisma/client";
@@ -20,7 +20,7 @@ export function InvoiceHero({ item, locale }: { item: HeroItem; locale: Locale }
   const productName =
     locale === "en" && item.productNameEn ? item.productNameEn : item.productNameAr;
   const unitLabel = UNITS[item.unit][locale === "en" ? "en" : "ar"];
-  const currencyKey = item.currency === "CNY" ? "CNY" : "USD";
+  const currencyKey = toAppCurrency(item.currency);
   const currencyLabel = CURRENCY_LABELS[currencyKey][locale === "en" ? "en" : "ar"];
 
   return (

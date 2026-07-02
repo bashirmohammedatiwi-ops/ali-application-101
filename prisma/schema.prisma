@@ -199,4 +199,5 @@ model AppSettings {
   companyNameAr     String @default("بوابة الحداثة للتجارة العامة")
   companyNameEn     String @default("Modernity Gate for General Trading")
   usdToCnyRate      Float  @default(7.2)
+  usdToIqdRate      Float  @default(1310)
 }

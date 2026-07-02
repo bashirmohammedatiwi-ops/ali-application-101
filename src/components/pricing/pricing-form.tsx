@@ -25,6 +25,7 @@ import { SectionCard } from "@/components/ui/card";
 import { StickyActionBar } from "@/components/ui/action-tile";
 import { submitPricing, returnToReceived, retranslateOrderItem } from "@/actions/orders";
 import { AVAILABILITY_OPTIONS, RETURN_REASONS } from "@/lib/constants";
+import { CURRENCIES, CURRENCY_LABELS } from "@/lib/currency";
 import { containsArabic } from "@/lib/translation";
 import { t, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/ui/toast";
@@ -244,10 +245,10 @@ export function PricingForm({
               label={t("currency", locale)}
               value={form.currency}
               onChange={(e) => setForm({ ...form, currency: e.target.value })}
-              options={[
-                { value: "USD", label: "USD ($)" },
-                { value: "CNY", label: "CNY (¥)" },
-              ]}
+              options={CURRENCIES.map((code) => ({
+                value: code,
+                label: CURRENCY_LABELS[code][locale === "en" ? "en" : "ar"],
+              }))}
             />
           </div>
           <Input

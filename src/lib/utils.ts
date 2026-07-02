@@ -18,6 +18,14 @@ export function randomId() {
 }
 
 export function formatCurrency(amount: number, currency = "USD") {
+  if (currency === "IQD") {
+    return new Intl.NumberFormat("ar-IQ", {
+      style: "currency",
+      currency: "IQD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
   const code = currency === "CNY" ? "CNY" : "USD";
   return new Intl.NumberFormat("en-US", {
     style: "currency",

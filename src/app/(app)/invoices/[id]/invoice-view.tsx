@@ -119,6 +119,7 @@ export async function OrderInvoiceView({
             locale={locale}
             role={user!.role}
             usdToCnyRate={settings?.usdToCnyRate ?? 7.2}
+            usdToIqdRate={settings?.usdToIqdRate ?? 1310}
           />
         </div>
       </div>

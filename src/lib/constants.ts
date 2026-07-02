@@ -3,9 +3,13 @@ import type { Role, OrderStatus, Unit, Priority, Availability } from "@/generate
 export const BRAND = {
   nameAr: "بوابة الحداثة للتجارة العامة",
   nameEn: "Modernity Gate for General Trading",
+  addressAr: "بغداد — العراق",
+  phone: "07700000000",
+  whatsapp: "07700000000",
   primary: "#3C3C3B",
   accent: "#E85C24",
   accentLight: "#FFF4EF",
+  accentDark: "#C44A1A",
   muted: "#6B7280",
   surface: "#F8F9FA",
   logoMark: "/brand/logo.png",

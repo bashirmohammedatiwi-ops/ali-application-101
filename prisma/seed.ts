@@ -55,6 +55,7 @@ async function main() {
       companyNameAr: "بوابة الحداثة للتجارة العامة",
       companyNameEn: "Modernity Gate for General Trading",
       usdToCnyRate: 7.2,
+      usdToIqdRate: 1310,
     },
   });
 

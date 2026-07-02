@@ -5,6 +5,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoiceDocument } from "@/components/pdf/invoice-document";
 import { getOrCreateSettings } from "@/lib/orders";
 import { UNITS } from "@/lib/constants";
+import { resolveLogoPath, resolvePublicAsset } from "@/lib/pdf-assets";
 
 export async function GET(
   _req: Request,
@@ -35,6 +36,8 @@ export async function GET(
   const settings = await getOrCreateSettings();
   const item = invoice.orderItem;
   const customer = item.request.customer;
+  const productImageSrc = resolvePublicAsset(item.images?.[0]?.url);
+  const logoSrc = resolveLogoPath();
 
   const buffer = await renderToBuffer(
     InvoiceDocument({
@@ -42,7 +45,9 @@ export async function GET(
       item,
       customer,
       settings,
-      unitLabel: UNITS[item.unit].en,
+      unitLabel: UNITS[item.unit].ar,
+      logoSrc,
+      productImageSrc,
     })
   );
 
