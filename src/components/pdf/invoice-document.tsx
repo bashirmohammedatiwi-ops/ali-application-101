@@ -1,7 +1,6 @@
 import {
   Document,
   Page,
-  Text,
   View,
   StyleSheet,
   Image,
@@ -12,11 +11,10 @@ import { calculateMarkupAmount, formatMarkupPercent } from "@/lib/markup";
 import { registerPdfFonts, PDF_FONT_FAMILY } from "@/lib/pdf-fonts";
 import {
   formatPdfAmount,
-  formatPdfDate,
   CURRENCY_LABELS_AR,
 } from "@/lib/pdf-format";
-
 import { PDF_TEMPLATE_VERSION } from "@/lib/pdf-constants";
+import { PdfText } from "@/components/pdf/pdf-text";
 
 registerPdfFonts();
 
@@ -39,7 +37,6 @@ const styles = StyleSheet.create({
     fontFamily,
     fontSize: 8.5,
     color: C.ink,
-    direction: "rtl",
     backgroundColor: C.white,
     paddingBottom: 28,
     paddingHorizontal: 28,
@@ -274,8 +271,8 @@ type InvoiceDocProps = {
 function SpecPill({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.specPill}>
-      <Text style={styles.specLabel}>{label}</Text>
-      <Text style={styles.specValue}>{value}</Text>
+      <PdfText style={styles.specLabel}>{label}</PdfText>
+      <PdfText style={styles.specValue}>{value}</PdfText>
     </View>
   );
 }
@@ -297,6 +294,12 @@ export function InvoiceDocument({
   const companyAddress = settings.companyAddressAr || BRAND.addressAr;
   const companyPhone = settings.companyPhone || BRAND.phone;
   const fmt = (n: number) => formatPdfAmount(n, currency);
+  const fmtDate = (d: Date | string) =>
+    new Intl.DateTimeFormat("ar-IQ", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(new Date(d));
 
   const customerLocation = [customer.city, customer.address].filter(Boolean).join(" — ");
   const hasSpecs =
@@ -315,54 +318,54 @@ export function InvoiceDocument({
             {logoSrc ? (
               <Image src={logoSrc} style={styles.logoImg} />
             ) : (
-              <Text style={styles.logoLetter}>م</Text>
+              <PdfText style={styles.logoLetter}>م</PdfText>
             )}
           </View>
           <View style={styles.headerCenter}>
-            <Text style={styles.companyName}>{companyName}</Text>
-            <Text style={styles.companySub}>{companyAddress}</Text>
-            <Text style={styles.companySub}>هاتف: {companyPhone}</Text>
+            <PdfText style={styles.companyName}>{companyName}</PdfText>
+            <PdfText style={styles.companySub}>{companyAddress}</PdfText>
+            <PdfText style={styles.companySub}>{`هاتف: ${companyPhone}`}</PdfText>
           </View>
           <View style={styles.titleBadge}>
-            <Text style={styles.titleBadgeText}>فاتورة تسعير</Text>
-            <Text style={styles.titleBadgeSub}>عرض سعر رسمي</Text>
+            <PdfText style={styles.titleBadgeText}>فاتورة تسعير</PdfText>
+            <PdfText style={styles.titleBadgeSub}>عرض سعر رسمي</PdfText>
           </View>
         </View>
 
         {/* Meta chips */}
         <View style={styles.chipsRow}>
           <View style={styles.chip}>
-            <Text style={styles.chipLabel}>رقم الفاتورة</Text>
-            <Text style={styles.chipValue}>{invoice.invoiceNumber}</Text>
+            <PdfText style={styles.chipLabel}>رقم الفاتورة</PdfText>
+            <PdfText style={styles.chipValue}>{invoice.invoiceNumber}</PdfText>
           </View>
           <View style={styles.chip}>
-            <Text style={styles.chipLabel}>التاريخ</Text>
-            <Text style={styles.chipValue}>{formatPdfDate(invoice.createdAt)}</Text>
+            <PdfText style={styles.chipLabel}>التاريخ</PdfText>
+            <PdfText style={styles.chipValue}>{fmtDate(invoice.createdAt)}</PdfText>
           </View>
           <View style={styles.chip}>
-            <Text style={styles.chipLabel}>رقم الطلب</Text>
-            <Text style={styles.chipValue}>{item.refNumber}</Text>
+            <PdfText style={styles.chipLabel}>رقم الطلب</PdfText>
+            <PdfText style={styles.chipValue}>{item.refNumber}</PdfText>
           </View>
           <View style={styles.chip}>
-            <Text style={styles.chipLabel}>العملة</Text>
-            <Text style={styles.chipValue}>{currencyName}</Text>
+            <PdfText style={styles.chipLabel}>العملة</PdfText>
+            <PdfText style={styles.chipValue}>{currencyName}</PdfText>
           </View>
         </View>
 
         {/* Customer */}
         <View style={styles.customerStrip}>
           <View style={styles.customerField}>
-            <Text style={styles.customerLabel}>اسم العميل</Text>
-            <Text style={styles.customerValue}>{customer.name}</Text>
+            <PdfText style={styles.customerLabel}>اسم العميل</PdfText>
+            <PdfText style={styles.customerValue}>{customer.name}</PdfText>
           </View>
           <View style={styles.customerField}>
-            <Text style={styles.customerLabel}>رقم الهاتف</Text>
-            <Text style={styles.customerValue}>{customer.phone}</Text>
+            <PdfText style={styles.customerLabel}>رقم الهاتف</PdfText>
+            <PdfText style={styles.customerValue}>{customer.phone}</PdfText>
           </View>
           {customerLocation ? (
             <View style={[styles.customerField, { flex: 1.4 }]}>
-              <Text style={styles.customerLabel}>العنوان</Text>
-              <Text style={styles.customerValue}>{customerLocation}</Text>
+              <PdfText style={styles.customerLabel}>العنوان</PdfText>
+              <PdfText style={styles.customerValue}>{customerLocation}</PdfText>
             </View>
           ) : null}
         </View>
@@ -370,37 +373,37 @@ export function InvoiceDocument({
         {/* Product table */}
         <View style={styles.table}>
           <View style={styles.tableHead}>
-            <Text style={[styles.th, styles.colNum]}>#</Text>
-            <Text style={[styles.th, styles.colImg]}>صورة</Text>
-            <Text style={[styles.th, styles.colName]}>اسم المنتج</Text>
-            <Text style={[styles.th, styles.colQty]}>العدد</Text>
-            <Text style={[styles.th, styles.colUnit]}>سعر القطعة</Text>
-            <Text style={[styles.th, styles.colSum]}>المجموع</Text>
+            <PdfText style={[styles.th, styles.colNum]}>#</PdfText>
+            <PdfText style={[styles.th, styles.colImg]}>صورة</PdfText>
+            <PdfText style={[styles.th, styles.colName]}>اسم المنتج</PdfText>
+            <PdfText style={[styles.th, styles.colQty]}>العدد</PdfText>
+            <PdfText style={[styles.th, styles.colUnit]}>سعر القطعة</PdfText>
+            <PdfText style={[styles.th, styles.colSum]}>المجموع</PdfText>
           </View>
           <View style={styles.tableBody}>
-            <Text style={[styles.td, styles.colNum]}>1</Text>
+            <PdfText style={[styles.td, styles.colNum]}>1</PdfText>
             <View style={[styles.colImg, { alignItems: "center" }]}>
               {productImageSrc ? (
                 <Image src={productImageSrc} style={styles.productImg} />
               ) : (
                 <View style={styles.imgPlaceholder}>
-                  <Text style={styles.imgPlaceholderTxt}>—</Text>
+                  <PdfText style={styles.imgPlaceholderTxt}>—</PdfText>
                 </View>
               )}
             </View>
-            <Text style={[styles.tdBold, styles.colName]}>{productName}</Text>
-            <Text style={[styles.td, styles.colQty]}>
-              {item.quantity} {unitLabel}
-            </Text>
-            <Text style={[styles.td, styles.colUnit]}>{fmt(item.unitPrice ?? 0)}</Text>
-            <Text style={[styles.tdBold, styles.colSum]}>{fmt(invoice.subtotal)}</Text>
+            <PdfText style={[styles.tdBold, styles.colName]}>{productName}</PdfText>
+            <PdfText style={[styles.td, styles.colQty]}>
+              {`${item.quantity} ${unitLabel}`}
+            </PdfText>
+            <PdfText style={[styles.td, styles.colUnit]}>{fmt(item.unitPrice ?? 0)}</PdfText>
+            <PdfText style={[styles.tdBold, styles.colSum]}>{fmt(invoice.subtotal)}</PdfText>
           </View>
         </View>
 
         {/* Bottom: specs + totals */}
         <View style={styles.bottomSplit}>
           <View style={styles.logisticsBox}>
-            <Text style={styles.boxTitle}>الوزن والحجم</Text>
+            <PdfText style={styles.boxTitle}>الوزن والحجم</PdfText>
             {hasSpecs ? (
               <View style={styles.specRow}>
                 {item.weightKg != null && (
@@ -417,46 +420,46 @@ export function InvoiceDocument({
                 )}
               </View>
             ) : (
-              <Text style={styles.noteLine}>—</Text>
+              <PdfText style={styles.noteLine}>—</PdfText>
             )}
             {item.pricerNotes ? (
-              <Text style={styles.noteLine}>ملاحظة: {item.pricerNotes}</Text>
+              <PdfText style={styles.noteLine}>{`ملاحظة: ${item.pricerNotes}`}</PdfText>
             ) : null}
           </View>
 
           <View style={styles.totalsBox}>
-            <Text style={styles.boxTitle}>ملخص المبالغ</Text>
+            <PdfText style={styles.boxTitle}>ملخص المبالغ</PdfText>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLbl}>تكلفة المنتج</Text>
-              <Text style={styles.totalVal}>{fmt(invoice.subtotal)}</Text>
+              <PdfText style={styles.totalLbl}>تكلفة المنتج</PdfText>
+              <PdfText style={styles.totalVal}>{fmt(invoice.subtotal)}</PdfText>
             </View>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLbl}>أجور الشحن الداخلي</Text>
-              <Text style={styles.totalVal}>+ {fmt(invoice.shipping)}</Text>
+              <PdfText style={styles.totalLbl}>أجور الشحن الداخلي</PdfText>
+              <PdfText style={styles.totalVal}>{`+ ${fmt(invoice.shipping)}`}</PdfText>
             </View>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLbl}>
+              <PdfText style={styles.totalLbl}>
                 {invoice.markup > 0
                   ? `عمولة المكتب (${formatMarkupPercent(invoice.markup)})`
                   : "عمولة المكتب"}
-              </Text>
-              <Text style={[styles.totalVal, invoice.markup > 0 ? { color: C.accent } : {}]}>
+              </PdfText>
+              <PdfText style={[styles.totalVal, invoice.markup > 0 ? { color: C.accent } : {}]}>
                 {invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—"}
-              </Text>
+              </PdfText>
             </View>
             <View style={styles.grandBox}>
-              <Text style={styles.grandLbl}>الإجمالي النهائي</Text>
-              <Text style={styles.grandVal}>{fmt(invoice.grandTotal)}</Text>
+              <PdfText style={styles.grandLbl}>الإجمالي النهائي</PdfText>
+              <PdfText style={styles.grandVal}>{fmt(invoice.grandTotal)}</PdfText>
             </View>
           </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.thankYou}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</Text>
-          <Text style={styles.footerNote}>
-            الأسعار لا تشمل الشحن الدولي · {companyName} · هاتف: {companyPhone}
-          </Text>
+          <PdfText style={styles.thankYou}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</PdfText>
+          <PdfText style={styles.footerNote}>
+            {`الأسعار لا تشمل الشحن الدولي · ${companyName} · هاتف: ${companyPhone}`}
+          </PdfText>
         </View>
       </Page>
     </Document>
