@@ -15,6 +15,11 @@ fi
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "=== Pulling latest code ==="
+  # Old VPS setups had a generated untracked file — repo now tracks the canonical copy
+  if [ -f docker-compose.traefik-net.yml ] && ! git ls-files --error-unmatch docker-compose.traefik-net.yml >/dev/null 2>&1; then
+    echo "Removing local untracked docker-compose.traefik-net.yml (replaced by repo version)"
+    rm -f docker-compose.traefik-net.yml
+  fi
   git pull --ff-only
   echo "Commit: $(git log -1 --oneline)"
 fi
