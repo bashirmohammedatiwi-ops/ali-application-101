@@ -1,36 +1,47 @@
-import bidiFactory from "bidi-js";
-
-const bidi = bidiFactory();
+/** Arabic / mixed-text helpers for react-pdf — no bidi pre-processing. */
 
 const ARABIC_RE =
   /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
 
-const LATIN_OR_DIGIT_RE = /[A-Za-z0-9]/;
+export type TextRun = { kind: "ar" | "lat"; value: string };
 
-/** Wrap Latin/numbers so they stay LTR inside RTL paragraphs (react-pdf). */
-export function pdfLtr(value: string): string {
-  if (!value) return value;
-  return `\u2066${value}\u2069`;
-}
+/** Split mixed Arabic/Latin into separate runs for isolated Text nodes. */
+export function splitMixedText(text: string): TextRun[] {
+  if (!text) return [];
 
-/**
- * react-pdf shapes pure Arabic via fontkit (Noto Sans Arabic).
- * Mixed Arabic + Latin/numbers needs explicit bidi reorder — without arabic-reshaper.
- */
-export function shapeArabicText(text: string): string {
-  if (!text || !ARABIC_RE.test(text)) return text;
+  const runs: TextRun[] = [];
+  let buf = "";
+  let kind: "ar" | "lat" | null = null;
 
-  // Pure Arabic — fontkit handles joining/ligatures
-  if (!LATIN_OR_DIGIT_RE.test(text)) return text;
+  const flush = () => {
+    if (!buf) return;
+    runs.push({ kind: kind!, value: buf });
+    buf = "";
+    kind = null;
+  };
 
-  try {
-    const levels = bidi.getEmbeddingLevels(text, "rtl");
-    return bidi.getReorderedString(text, levels);
-  } catch {
-    return text;
+  for (const ch of text) {
+    if (/\s/.test(ch)) {
+      flush();
+      continue;
+    }
+    const isAr = ARABIC_RE.test(ch);
+    const k: "ar" | "lat" = isAr ? "ar" : "lat";
+    if (kind === null) {
+      kind = k;
+      buf = ch;
+    } else if (kind === k) {
+      buf += ch;
+    } else {
+      flush();
+      kind = k;
+      buf = ch;
+    }
   }
+  flush();
+  return runs;
 }
 
-export function hasArabic(text: string): boolean {
+export function isArabicText(text: string): boolean {
   return ARABIC_RE.test(text);
 }

@@ -1,21 +1,20 @@
-import { pdfLtr } from "@/lib/pdf-arabic";
-
 export function formatPdfDate(date: Date | string) {
   return new Intl.DateTimeFormat("ar-IQ", {
     year: "numeric",
     month: "long",
     day: "numeric",
+    numberingSystem: "latn",
   }).format(new Date(date));
 }
 
-export function formatPdfAmount(amount: number, currency: string) {
+export function formatPdfAmount(amount: number, currency: string): string {
   if (currency === "IQD") {
-    return pdfLtr(`${Math.round(amount).toLocaleString("en-US")} د.ع`);
+    return `${Math.round(amount).toLocaleString("en-US")} IQD`;
   }
   if (currency === "CNY") {
-    return pdfLtr(`${amount.toFixed(2)} ¥`);
+    return `CNY ${amount.toFixed(2)}`;
   }
-  return pdfLtr(`${amount.toFixed(2)} $`);
+  return `USD ${amount.toFixed(2)}`;
 }
 
 export const CURRENCY_LABELS_AR: Record<string, string> = {

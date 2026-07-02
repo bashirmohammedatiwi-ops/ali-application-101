@@ -1,311 +1,209 @@
-import {
-  Document,
-  Page,
-  View,
-  StyleSheet,
-  Image,
-} from "@react-pdf/renderer";
+import { Document, Page, View, StyleSheet, Image } from "@react-pdf/renderer";
+import type { ReactNode } from "react";
 import type { Invoice, OrderItem, Customer, AppSettings } from "@/generated/prisma/client";
 import { BRAND } from "@/lib/constants";
 import { calculateMarkupAmount, formatMarkupPercent } from "@/lib/markup";
 import { registerPdfFonts, PDF_FONT_FAMILY } from "@/lib/pdf-fonts";
-import {
-  formatPdfAmount,
-  CURRENCY_LABELS_AR,
-} from "@/lib/pdf-format";
-import { PdfText } from "@/components/pdf/pdf-text";
+import { formatPdfAmount, formatPdfDate, CURRENCY_LABELS_AR } from "@/lib/pdf-format";
+import { PdfAr, PdfNum, PdfMixed } from "@/components/pdf/pdf-text";
 
 registerPdfFonts();
 
-const fontFamily = PDF_FONT_FAMILY;
-
 const C = {
-  primary: BRAND.primary,
-  accent: BRAND.accent,
-  accentDark: BRAND.accentDark,
-  accentLight: "#FFF6F1",
-  accentSoft: "#FCE9DF",
-  muted: "#7A756F",
-  border: "#E8E2DB",
+  primary: "#3C3C3B",
+  accent: "#E85C24",
+  muted: "#8A8580",
+  border: "#E5E0DA",
   white: "#FFFFFF",
-  ink: "#1F1E1D",
+  ink: "#2A2928",
   paper: "#FAF8F6",
-  rowAlt: "#F5F2EF",
 };
 
-/** A4 portrait — 595×842 pt. Margins ~14mm. */
-const PAGE = {
-  padH: 40,
-  padV: 32,
-};
+const W = 515; // content width (A4 595 - 40*2 padding)
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily,
+    fontFamily: PDF_FONT_FAMILY,
     fontSize: 9,
     color: C.ink,
     backgroundColor: C.white,
-    paddingTop: PAGE.padV,
-    paddingBottom: PAGE.padV,
-    paddingHorizontal: PAGE.padH,
-    direction: "rtl",
-    flexDirection: "column",
+    paddingVertical: 36,
+    paddingHorizontal: 40,
   },
 
-  body: {
-    flex: 1,
-    flexDirection: "column",
-  },
-
-  /* Header */
   header: {
-    marginBottom: 18,
-    borderRadius: 10,
-    overflow: "hidden",
     backgroundColor: C.primary,
-  },
-  headerInner: {
-    flexDirection: "row-reverse",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 20,
-    paddingHorizontal: 22,
-    gap: 16,
   },
-  headerStripe: {
-    height: 4,
-    backgroundColor: C.accent,
-  },
-  logoWrap: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+  headerRight: { width: 56, alignItems: "center" },
+  logo: { width: 48, height: 48, borderRadius: 24, objectFit: "contain" },
+  logoPh: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: C.white,
     alignItems: "center",
     justifyContent: "center",
-    border: `2 solid ${C.accent}`,
   },
-  logoImg: { width: 46, height: 46, objectFit: "contain" },
-  logoFallback: { fontSize: 22, fontWeight: 700, color: C.accent },
-  headerBrand: { flex: 1, alignItems: "flex-end" },
-  companyName: {
-    fontSize: 15,
-    fontWeight: 700,
-    color: C.white,
-    textAlign: "right",
-    marginBottom: 4,
-  },
-  companyLine: {
-    fontSize: 8,
-    color: "#D4D0CA",
-    textAlign: "right",
-    lineHeight: 1.5,
-  },
-  invoiceBadge: {
+  headerCenter: { flex: 1, paddingHorizontal: 12 },
+  companyName: { fontSize: 14, fontWeight: 700, color: C.white, textAlign: "right" },
+  companySub: { fontSize: 8, color: "#CCCCCC", textAlign: "right", marginTop: 3 },
+  headerLeft: {
     backgroundColor: C.accent,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minWidth: 108,
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    minWidth: 90,
     alignItems: "center",
   },
-  invoiceBadgeTitle: { fontSize: 12, fontWeight: 700, color: C.white },
-  invoiceBadgeSub: { fontSize: 7, color: "#FFFFFFD9", marginTop: 3 },
+  headerTitle: { fontSize: 11, fontWeight: 700, color: C.white },
+  headerSub: { fontSize: 7, color: "#FFFFFFCC", marginTop: 2 },
 
-  /* Meta grid */
-  metaGrid: {
-    flexDirection: "row-reverse",
-    flexWrap: "wrap",
-    gap: 8,
+  metaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 14,
+    gap: 8,
   },
-  metaCard: {
-    width: "48.5%",
+  metaBox: {
+    width: W / 4 - 6,
     backgroundColor: C.paper,
-    borderRadius: 8,
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    alignItems: "flex-end",
+    padding: 8,
   },
-  metaLabel: { fontSize: 7, color: C.muted, marginBottom: 3 },
-  metaValue: { fontSize: 10, fontWeight: 700, color: C.ink },
+  metaLbl: { fontSize: 7, color: C.muted, textAlign: "right", marginBottom: 4 },
+  metaVal: { fontSize: 9, fontWeight: 700, textAlign: "right" },
 
-  /* Section */
-  section: {
-    marginBottom: 14,
-  },
-  sectionHead: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    marginBottom: 8,
-    gap: 8,
-  },
-  sectionBar: {
-    width: 4,
-    height: 16,
-    backgroundColor: C.accent,
-    borderRadius: 2,
-  },
-  sectionTitle: {
+  blockTitle: {
     fontSize: 10,
     fontWeight: 700,
-    color: C.primary,
+    color: C.accent,
+    textAlign: "right",
+    marginBottom: 8,
+    paddingBottom: 4,
+    borderBottom: `2 solid ${C.accent}`,
   },
 
-  /* Customer */
-  customerCard: {
-    flexDirection: "row-reverse",
-    backgroundColor: C.accentLight,
-    borderRadius: 8,
-    border: `1 solid ${C.accentSoft}`,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    gap: 12,
-  },
-  customerCol: { flex: 1, alignItems: "flex-end" },
-  customerLabel: { fontSize: 7, color: C.muted, marginBottom: 3 },
-  customerValue: { fontSize: 10, fontWeight: 700, color: C.ink },
-
-  /* Table */
-  table: {
-    borderRadius: 8,
+  customerBox: {
+    backgroundColor: C.paper,
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
+    padding: 12,
+    marginBottom: 14,
+  },
+  fieldRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+    paddingBottom: 6,
+    borderBottom: `1 solid ${C.border}`,
+  },
+  fieldLbl: { fontSize: 8, color: C.muted, width: 80, textAlign: "right" },
+  fieldVal: { fontSize: 9, fontWeight: 700, flex: 1, textAlign: "right" },
+
+  table: {
+    borderRadius: 6,
+    border: `1 solid ${C.border}`,
+    marginBottom: 14,
     overflow: "hidden",
   },
-  tableHead: {
-    flexDirection: "row-reverse",
+  tHead: {
+    flexDirection: "row",
     backgroundColor: C.primary,
-    paddingVertical: 9,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
   },
-  th: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: C.white,
-    textAlign: "center",
-  },
-  tableRow: {
-    flexDirection: "row-reverse",
+  th: { fontSize: 7.5, fontWeight: 700, color: C.white, textAlign: "center" },
+  tRow: {
+    flexDirection: "row",
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
     alignItems: "center",
-    backgroundColor: C.white,
-    minHeight: 58,
+    minHeight: 52,
     borderTop: `1 solid ${C.border}`,
   },
-  td: { fontSize: 9, color: C.ink, textAlign: "center" },
-  tdBold: { fontSize: 9, fontWeight: 700, color: C.ink },
-  tdName: { fontSize: 9.5, fontWeight: 700, textAlign: "right", color: C.ink, lineHeight: 1.35 },
-  colNum: { width: "6%" },
-  colImg: { width: "12%" },
-  colName: { width: "30%" },
-  colQty: { width: "14%" },
-  colUnit: { width: "18%" },
-  colSum: { width: "20%" },
-  productImg: {
-    width: 46,
-    height: 46,
-    borderRadius: 6,
-    objectFit: "cover",
-    border: `1 solid ${C.border}`,
-  },
-  imgPh: {
-    width: 46,
-    height: 46,
-    borderRadius: 6,
-    backgroundColor: C.rowAlt,
+  td: { fontSize: 8.5, textAlign: "center" },
+  tdName: { fontSize: 9, fontWeight: 700, textAlign: "right", paddingHorizontal: 4 },
+  cNum: { width: 28 },
+  cImg: { width: 52 },
+  cName: { width: 168 },
+  cQty: { width: 72 },
+  cUnit: { width: 88 },
+  cSum: { width: 87 },
+  thumb: { width: 40, height: 40, borderRadius: 4, objectFit: "cover" },
+  thumbPh: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: C.paper,
+    border: `1 dashed ${C.border}`,
     alignItems: "center",
     justifyContent: "center",
-    border: `1 dashed ${C.accent}`,
   },
 
-  /* Bottom */
-  bottomRow: {
-    flexDirection: "row-reverse",
-    gap: 12,
-    marginTop: 4,
-  },
+  bottom: { flexDirection: "row", gap: 10 },
   panel: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
+    padding: 10,
     backgroundColor: C.paper,
-    padding: 12,
   },
   panelTitle: {
     fontSize: 9,
     fontWeight: 700,
-    color: C.accentDark,
+    color: C.accent,
     textAlign: "right",
-    marginBottom: 10,
-    paddingBottom: 6,
-    borderBottom: `1 solid ${C.border}`,
+    marginBottom: 8,
   },
-  specGrid: {
-    flexDirection: "row-reverse",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  specItem: {
-    width: "47%",
-    backgroundColor: C.white,
-    borderRadius: 6,
-    border: `1 solid ${C.border}`,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    alignItems: "flex-end",
-  },
-  specLbl: { fontSize: 7, color: C.muted, marginBottom: 2 },
-  specVal: { fontSize: 9, fontWeight: 700, color: C.ink },
-  noteText: {
-    fontSize: 8,
-    color: C.muted,
-    textAlign: "right",
-    lineHeight: 1.4,
-    marginTop: 8,
-  },
-
-  totalLine: {
-    flexDirection: "row-reverse",
+  specLine: {
+    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 6,
+    marginBottom: 5,
+    paddingBottom: 4,
     borderBottom: `1 dashed ${C.border}`,
   },
-  totalLbl: { fontSize: 8.5, color: C.muted },
-  totalVal: { fontSize: 8.5, fontWeight: 700, color: C.ink },
+  specLbl: { fontSize: 8, color: C.muted },
+  specVal: { fontSize: 8.5, fontWeight: 700 },
+
+  moneyLine: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 5,
+    paddingBottom: 4,
+    borderBottom: `1 dashed ${C.border}`,
+  },
+  moneyLbl: { fontSize: 8.5, color: C.muted, textAlign: "right", flex: 1 },
+  moneyVal: { fontSize: 8.5, fontWeight: 700, width: 100, textAlign: "left" },
   grand: {
-    marginTop: 10,
+    marginTop: 8,
     backgroundColor: C.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    flexDirection: "row-reverse",
+    borderRadius: 6,
+    padding: 10,
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: `3 solid ${C.accent}`,
   },
   grandLbl: { fontSize: 10, fontWeight: 700, color: C.white },
-  grandVal: { fontSize: 14, fontWeight: 700, color: C.accent },
+  grandVal: { fontSize: 13, fontWeight: 700, color: C.accent },
 
-  /* Footer */
   footer: {
-    marginTop: "auto",
-    paddingTop: 14,
+    marginTop: 16,
+    paddingTop: 10,
     borderTop: `1 solid ${C.border}`,
     alignItems: "center",
   },
-  thankYou: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: C.accentDark,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  footerNote: { fontSize: 7.5, color: C.muted, textAlign: "center", lineHeight: 1.4 },
+  footerMain: { fontSize: 10, fontWeight: 700, color: C.accent, marginBottom: 4 },
+  footerSub: { fontSize: 7.5, color: C.muted, textAlign: "center" },
 });
 
-type InvoiceDocProps = {
+type Props = {
   invoice: Invoice;
   item: OrderItem & { images?: { url: string }[] };
   customer: Customer;
@@ -315,30 +213,29 @@ type InvoiceDocProps = {
   productImageSrc?: string | null;
 };
 
-function SpecItem({ label, value }: { label: string; value: string }) {
-  const m = value.match(/^(\d+(?:\.\d+)?)\s*(.+)$/);
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <View style={styles.specItem}>
-      <PdfText style={styles.specLbl}>{label}</PdfText>
-      {m ? (
-        <View style={{ flexDirection: "row-reverse", gap: 3 }}>
-          <PdfText style={styles.specVal}>{m[2]}</PdfText>
-          <PdfText style={styles.specVal} shape={false}>
-            {m[1]}
-          </PdfText>
-        </View>
-      ) : (
-        <PdfText style={styles.specVal}>{value}</PdfText>
-      )}
+    <View style={styles.fieldRow}>
+      <PdfAr style={styles.fieldLbl}>{label}</PdfAr>
+      <View style={styles.fieldVal}>{children}</View>
     </View>
   );
 }
 
-function SectionTitle({ children }: { children: string }) {
+function Spec({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.sectionHead}>
-      <View style={styles.sectionBar} />
-      <PdfText style={styles.sectionTitle}>{children}</PdfText>
+    <View style={styles.specLine}>
+      <PdfAr style={styles.specLbl}>{label}</PdfAr>
+      <PdfMixed style={styles.specVal}>{value}</PdfMixed>
+    </View>
+  );
+}
+
+function MoneyRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <View style={styles.moneyLine}>
+      <PdfAr style={styles.moneyLbl}>{label}</PdfAr>
+      <PdfNum style={[styles.moneyVal, accent ? { color: C.accent } : {}]}>{value}</PdfNum>
     </View>
   );
 }
@@ -351,7 +248,7 @@ export function InvoiceDocument({
   unitLabel,
   logoSrc,
   productImageSrc,
-}: InvoiceDocProps) {
+}: Props) {
   const currency = item.currency;
   const currencyName = CURRENCY_LABELS_AR[currency] ?? currency;
   const markupAmount = calculateMarkupAmount(invoice.subtotal, invoice.shipping, invoice.markup);
@@ -360,220 +257,162 @@ export function InvoiceDocument({
   const companyAddress = settings.companyAddressAr || BRAND.addressAr;
   const companyPhone = settings.companyPhone || BRAND.phone;
   const fmt = (n: number) => formatPdfAmount(n, currency);
-  const fmtDate = (d: Date | string) =>
-    new Intl.DateTimeFormat("ar-IQ", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(new Date(d));
-
-  const customerLocation = [customer.city, customer.address].filter(Boolean).join(" — ");
-  const hasSpecs =
-    item.weightKg != null ||
-    item.volumeCbm != null ||
-    item.moq != null ||
-    item.leadTimeDays != null;
+  const location = [customer.city, customer.address].filter(Boolean).join(" — ");
 
   return (
     <Document>
-      <Page size="A4" orientation="portrait" style={styles.page} wrap={false}>
-        {/* ── Header ── */}
+      <Page size="A4" style={styles.page} wrap={false}>
+        {/* Header: logo (right) | company | badge (left) */}
         <View style={styles.header}>
-          <View style={styles.headerInner}>
-            <View style={styles.logoWrap}>
-              {logoSrc ? (
-                <Image src={logoSrc} style={styles.logoImg} />
-              ) : (
-                <PdfText style={styles.logoFallback}>م</PdfText>
-              )}
-            </View>
-            <View style={styles.headerBrand}>
-              <PdfText style={styles.companyName}>{companyName}</PdfText>
-              <PdfText style={styles.companyLine}>{companyAddress}</PdfText>
-              <View style={{ flexDirection: "row-reverse", gap: 3, marginTop: 2 }}>
-                <PdfText style={styles.companyLine}>هاتف:</PdfText>
-                <PdfText style={styles.companyLine} shape={false}>
-                  {companyPhone}
-                </PdfText>
-              </View>
-            </View>
-            <View style={styles.invoiceBadge}>
-              <PdfText style={styles.invoiceBadgeTitle}>فاتورة تسعير</PdfText>
-              <PdfText style={styles.invoiceBadgeSub}>عرض سعر رسمي</PdfText>
+          <View style={styles.headerLeft}>
+            <PdfAr style={styles.headerTitle}>فاتورة تسعير</PdfAr>
+            <PdfAr style={styles.headerSub}>عرض سعر رسمي</PdfAr>
+          </View>
+          <View style={styles.headerCenter}>
+            <PdfAr style={styles.companyName}>{companyName}</PdfAr>
+            <PdfAr style={styles.companySub}>{companyAddress}</PdfAr>
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 2 }}>
+              <PdfAr style={styles.companySub}>هاتف: </PdfAr>
+              <PdfNum style={styles.companySub}>{companyPhone}</PdfNum>
             </View>
           </View>
-          <View style={styles.headerStripe} />
+          <View style={styles.headerRight}>
+            {logoSrc ? (
+              <Image src={logoSrc} style={styles.logo} />
+            ) : (
+              <View style={styles.logoPh}>
+                <PdfAr style={{ fontSize: 18, fontWeight: 700, color: C.accent }}>م</PdfAr>
+              </View>
+            )}
+          </View>
         </View>
 
-        <View style={styles.body}>
-          {/* ── Meta ── */}
-          <View style={styles.metaGrid}>
-            <View style={styles.metaCard}>
-              <PdfText style={styles.metaLabel}>رقم الفاتورة</PdfText>
-              <PdfText style={styles.metaValue} shape={false}>
-                {invoice.invoiceNumber}
-              </PdfText>
-            </View>
-            <View style={styles.metaCard}>
-              <PdfText style={styles.metaLabel}>التاريخ</PdfText>
-              <PdfText style={styles.metaValue}>{fmtDate(invoice.createdAt)}</PdfText>
-            </View>
-            <View style={styles.metaCard}>
-              <PdfText style={styles.metaLabel}>رقم الطلب</PdfText>
-              <PdfText style={styles.metaValue} shape={false}>
-                {item.refNumber}
-              </PdfText>
-            </View>
-            <View style={styles.metaCard}>
-              <PdfText style={styles.metaLabel}>العملة</PdfText>
-              <PdfText style={styles.metaValue}>{currencyName}</PdfText>
-            </View>
+        {/* Meta */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaBox}>
+            <PdfAr style={styles.metaLbl}>رقم الفاتورة</PdfAr>
+            <PdfNum style={styles.metaVal}>{invoice.invoiceNumber}</PdfNum>
           </View>
-
-          {/* ── Customer ── */}
-          <View style={styles.section}>
-            <SectionTitle>بيانات العميل</SectionTitle>
-            <View style={styles.customerCard}>
-              <View style={styles.customerCol}>
-                <PdfText style={styles.customerLabel}>اسم العميل</PdfText>
-                <PdfText style={styles.customerValue}>{customer.name}</PdfText>
-              </View>
-              <View style={styles.customerCol}>
-                <PdfText style={styles.customerLabel}>رقم الهاتف</PdfText>
-                <PdfText style={styles.customerValue} shape={false}>
-                  {customer.phone}
-                </PdfText>
-              </View>
-              {customerLocation ? (
-                <View style={[styles.customerCol, { flex: 1.5 }]}>
-                  <PdfText style={styles.customerLabel}>العنوان</PdfText>
-                  <PdfText style={styles.customerValue}>{customerLocation}</PdfText>
-                </View>
-              ) : null}
-            </View>
+          <View style={styles.metaBox}>
+            <PdfAr style={styles.metaLbl}>التاريخ</PdfAr>
+            <PdfAr style={styles.metaVal}>{formatPdfDate(invoice.createdAt)}</PdfAr>
           </View>
-
-          {/* ── Products ── */}
-          <View style={styles.section}>
-            <SectionTitle>تفاصيل المنتج</SectionTitle>
-            <View style={styles.table}>
-              <View style={styles.tableHead}>
-                <PdfText style={[styles.th, styles.colNum]}>#</PdfText>
-                <PdfText style={[styles.th, styles.colImg]}>صورة</PdfText>
-                <PdfText style={[styles.th, styles.colName]}>اسم المنتج</PdfText>
-                <PdfText style={[styles.th, styles.colQty]}>الكمية</PdfText>
-                <PdfText style={[styles.th, styles.colUnit]}>سعر القطعة</PdfText>
-                <PdfText style={[styles.th, styles.colSum]}>المجموع</PdfText>
-              </View>
-              <View style={styles.tableRow}>
-                <PdfText style={[styles.td, styles.colNum]} shape={false}>
-                  1
-                </PdfText>
-                <View style={[styles.colImg, { alignItems: "center" }]}>
-                  {productImageSrc ? (
-                    <Image src={productImageSrc} style={styles.productImg} />
-                  ) : (
-                    <View style={styles.imgPh}>
-                      <PdfText style={{ fontSize: 6, color: C.muted }}>—</PdfText>
-                    </View>
-                  )}
-                </View>
-                <PdfText style={[styles.tdName, styles.colName]}>{productName}</PdfText>
-                <View
-                  style={[
-                    styles.colQty,
-                    { flexDirection: "row-reverse", justifyContent: "center", gap: 4 },
-                  ]}
-                >
-                  <PdfText style={styles.td}>{unitLabel}</PdfText>
-                  <PdfText style={styles.td} shape={false}>
-                    {String(item.quantity)}
-                  </PdfText>
-                </View>
-                <PdfText style={[styles.td, styles.colUnit]} shape={false}>
-                  {fmt(item.unitPrice ?? 0)}
-                </PdfText>
-                <PdfText style={[styles.tdBold, styles.colSum]} shape={false}>
-                  {fmt(invoice.subtotal)}
-                </PdfText>
-              </View>
-            </View>
+          <View style={styles.metaBox}>
+            <PdfAr style={styles.metaLbl}>رقم الطلب</PdfAr>
+            <PdfNum style={styles.metaVal}>{item.refNumber}</PdfNum>
           </View>
+          <View style={styles.metaBox}>
+            <PdfAr style={styles.metaLbl}>العملة</PdfAr>
+            <PdfAr style={styles.metaVal}>{currencyName}</PdfAr>
+          </View>
+        </View>
 
-          {/* ── Specs + Totals ── */}
-          <View style={styles.bottomRow}>
-            <View style={styles.panel}>
-              <PdfText style={styles.panelTitle}>الوزن والمواصفات</PdfText>
-              {hasSpecs ? (
-                <View style={styles.specGrid}>
-                  {item.weightKg != null && (
-                    <SpecItem label="الوزن" value={`${item.weightKg} كغ`} />
-                  )}
-                  {item.volumeCbm != null && (
-                    <SpecItem label="الحجم" value={`${item.volumeCbm} م³`} />
-                  )}
-                  {item.moq != null && (
-                    <SpecItem label="الحد الأدنى" value={`${item.moq} ${unitLabel}`} />
-                  )}
-                  {item.leadTimeDays != null && (
-                    <SpecItem label="مدة التجهيز" value={`${item.leadTimeDays} يوم`} />
-                  )}
-                </View>
+        {/* Customer */}
+        <PdfAr style={styles.blockTitle}>بيانات العميل</PdfAr>
+        <View style={styles.customerBox}>
+          <Field label="الاسم">
+            <PdfAr style={{ fontSize: 9, fontWeight: 700, textAlign: "right" }}>{customer.name}</PdfAr>
+          </Field>
+          <Field label="الهاتف">
+            <PdfNum style={{ fontSize: 9, fontWeight: 700, textAlign: "right" }}>{customer.phone}</PdfNum>
+          </Field>
+          {location ? (
+            <Field label="العنوان">
+              <PdfAr style={{ fontSize: 9, fontWeight: 700, textAlign: "right" }}>{location}</PdfAr>
+            </Field>
+          ) : null}
+        </View>
+
+        {/* Product table */}
+        <PdfAr style={styles.blockTitle}>تفاصيل المنتج</PdfAr>
+        <View style={styles.table}>
+          <View style={styles.tHead}>
+            <PdfAr style={[styles.th, styles.cSum]}>المجموع</PdfAr>
+            <PdfAr style={[styles.th, styles.cUnit]}>سعر القطعة</PdfAr>
+            <PdfAr style={[styles.th, styles.cQty]}>الكمية</PdfAr>
+            <PdfAr style={[styles.th, styles.cName]}>اسم المنتج</PdfAr>
+            <PdfAr style={[styles.th, styles.cImg]}>صورة</PdfAr>
+            <PdfAr style={[styles.th, styles.cNum]}>#</PdfAr>
+          </View>
+          <View style={styles.tRow}>
+            <View style={styles.cSum}>
+              <PdfNum style={styles.td}>{fmt(invoice.subtotal)}</PdfNum>
+            </View>
+            <View style={styles.cUnit}>
+              <PdfNum style={styles.td}>{fmt(item.unitPrice ?? 0)}</PdfNum>
+            </View>
+            <View style={[styles.cQty, { flexDirection: "row", justifyContent: "center", gap: 4 }]}>
+              <PdfAr style={styles.td}>{unitLabel}</PdfAr>
+              <PdfNum style={styles.td}>{String(item.quantity)}</PdfNum>
+            </View>
+            <View style={styles.cName}>
+              <PdfMixed style={styles.tdName} wrapStyle={{ justifyContent: "flex-end" }}>
+                {productName}
+              </PdfMixed>
+            </View>
+            <View style={[styles.cImg, { alignItems: "center" }]}>
+              {productImageSrc ? (
+                <Image src={productImageSrc} style={styles.thumb} />
               ) : (
-                <PdfText style={styles.noteText}>—</PdfText>
+                <View style={styles.thumbPh}>
+                  <PdfNum style={{ fontSize: 6, color: C.muted }}>—</PdfNum>
+                </View>
               )}
-              {item.pricerNotes ? (
-                <PdfText style={styles.noteText}>{`ملاحظة: ${item.pricerNotes}`}</PdfText>
-              ) : null}
             </View>
-
-            <View style={styles.panel}>
-              <PdfText style={styles.panelTitle}>ملخص المبالغ</PdfText>
-              <View style={styles.totalLine}>
-                <PdfText style={styles.totalLbl}>تكلفة المنتج</PdfText>
-                <PdfText style={styles.totalVal} shape={false}>
-                  {fmt(invoice.subtotal)}
-                </PdfText>
-              </View>
-              <View style={styles.totalLine}>
-                <PdfText style={styles.totalLbl}>أجور الشحن الداخلي</PdfText>
-                <PdfText style={styles.totalVal} shape={false}>
-                  {`+ ${fmt(invoice.shipping)}`}
-                </PdfText>
-              </View>
-              <View style={styles.totalLine}>
-                <PdfText style={styles.totalLbl}>
-                  {invoice.markup > 0
-                    ? `عمولة المكتب (${formatMarkupPercent(invoice.markup)})`
-                    : "عمولة المكتب"}
-                </PdfText>
-                <PdfText
-                  style={[styles.totalVal, invoice.markup > 0 ? { color: C.accent } : {}]}
-                  shape={false}
-                >
-                  {invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—"}
-                </PdfText>
-              </View>
-              <View style={styles.grand}>
-                <PdfText style={styles.grandLbl}>الإجمالي النهائي</PdfText>
-                <PdfText style={styles.grandVal} shape={false}>
-                  {fmt(invoice.grandTotal)}
-                </PdfText>
-              </View>
+            <View style={styles.cNum}>
+              <PdfNum style={styles.td}>1</PdfNum>
             </View>
           </View>
         </View>
 
-        {/* ── Footer ── */}
+        {/* Bottom */}
+        <View style={styles.bottom}>
+          <View style={styles.panel}>
+            <PdfAr style={styles.panelTitle}>الوزن والمواصفات</PdfAr>
+            {item.weightKg != null && <Spec label="الوزن" value={`${item.weightKg} كغ`} />}
+            {item.volumeCbm != null && <Spec label="الحجم" value={`${item.volumeCbm} م³`} />}
+            {item.moq != null && <Spec label="الحد الأدنى" value={`${item.moq} ${unitLabel}`} />}
+            {item.leadTimeDays != null && (
+              <Spec label="مدة التجهيز" value={`${item.leadTimeDays} يوم`} />
+            )}
+            {item.pricerNotes ? (
+              <View style={{ marginTop: 6 }}>
+                <PdfAr style={{ fontSize: 8, color: C.muted, textAlign: "right" }}>
+                  {`ملاحظة: ${item.pricerNotes}`}
+                </PdfAr>
+              </View>
+            ) : null}
+          </View>
+
+          <View style={styles.panel}>
+            <PdfAr style={styles.panelTitle}>ملخص المبالغ</PdfAr>
+            <MoneyRow label="تكلفة المنتج" value={fmt(invoice.subtotal)} />
+            <MoneyRow label="أجور الشحن الداخلي" value={`+ ${fmt(invoice.shipping)}`} />
+            <MoneyRow
+              label={
+                invoice.markup > 0
+                  ? `عمولة المكتب (${formatMarkupPercent(invoice.markup)})`
+                  : "عمولة المكتب"
+              }
+              value={invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—"}
+              accent={invoice.markup > 0}
+            />
+            <View style={styles.grand}>
+              <PdfAr style={styles.grandLbl}>الإجمالي النهائي</PdfAr>
+              <PdfNum style={styles.grandVal}>{fmt(invoice.grandTotal)}</PdfNum>
+            </View>
+          </View>
+        </View>
+
+        {/* Footer */}
         <View style={styles.footer}>
-          <PdfText style={styles.thankYou}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</PdfText>
-          <View style={{ flexDirection: "row-reverse", justifyContent: "center", flexWrap: "wrap" }}>
-            <PdfText style={styles.footerNote}>
-              {`الأسعار لا تشمل الشحن الدولي · ${companyName} · هاتف: `}
-            </PdfText>
-            <PdfText style={styles.footerNote} shape={false}>
-              {companyPhone}
-            </PdfText>
+          <PdfAr style={styles.footerMain}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</PdfAr>
+          <PdfAr style={styles.footerSub}>
+            {`الأسعار لا تشمل الشحن الدولي · ${companyName}`}
+          </PdfAr>
+          <View style={{ flexDirection: "row", justifyContent: "center" }}>
+            <PdfAr style={styles.footerSub}>هاتف: </PdfAr>
+            <PdfNum style={styles.footerSub}>{companyPhone}</PdfNum>
           </View>
         </View>
       </Page>
