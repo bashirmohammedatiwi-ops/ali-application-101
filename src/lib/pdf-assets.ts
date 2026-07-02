@@ -1,7 +1,9 @@
 import fs from "fs";
+import { readFile } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
-/** Resolve a public URL or relative path to an absolute filesystem path for react-pdf. */
+/** Absolute filesystem path for react-pdf (PNG/JPEG logos). */
 export function resolvePublicAsset(src?: string | null): string | null {
   if (!src) return null;
   if (src.startsWith("http://") || src.startsWith("https://")) return src;
@@ -17,4 +19,38 @@ export function resolveLogoPath(): string | null {
     path.join(process.cwd(), "public", "logo.png"),
   ];
   return candidates.find((p) => fs.existsSync(p)) ?? null;
+}
+
+/** PDFKit only embeds JPEG/PNG — uploads are WebP, so convert for the invoice. */
+export async function resolveProductImageForPdf(
+  urls?: { url: string }[]
+): Promise<string | null> {
+  if (!urls?.length) return null;
+
+  for (const { url } of urls) {
+    const dataUri = await fileUrlToPdfImageDataUri(url);
+    if (dataUri) return dataUri;
+  }
+  return null;
+}
+
+async function fileUrlToPdfImageDataUri(url: string): Promise<string | null> {
+  const filePath = resolvePublicAsset(url);
+  if (!filePath) {
+    console.warn("[pdf] product image missing on disk:", url);
+    return null;
+  }
+
+  try {
+    const input = await readFile(filePath);
+    const jpeg = await sharp(input, { failOn: "none" })
+      .rotate()
+      .resize(400, 400, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+    return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
+  } catch (error) {
+    console.error("[pdf] product image convert failed:", url, error);
+    return null;
+  }
 }

@@ -6,7 +6,7 @@ import { InvoiceDocument } from "@/components/pdf/invoice-document";
 import { PDF_TEMPLATE_VERSION } from "@/lib/pdf-constants";
 import { getOrCreateSettings } from "@/lib/orders";
 import { UNITS } from "@/lib/constants";
-import { resolveLogoPath, resolvePublicAsset } from "@/lib/pdf-assets";
+import { resolveLogoPath, resolveProductImageForPdf } from "@/lib/pdf-assets";
 import { registerPdfFonts } from "@/lib/pdf-fonts";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export async function GET(
     const settings = await getOrCreateSettings();
     const item = invoice.orderItem;
     const customer = item.request.customer;
-    const productImageSrc = resolvePublicAsset(item.images?.[0]?.url);
+    const productImageSrc = await resolveProductImageForPdf(item.images);
     const logoSrc = resolveLogoPath();
 
     const buffer = await renderToBuffer(
