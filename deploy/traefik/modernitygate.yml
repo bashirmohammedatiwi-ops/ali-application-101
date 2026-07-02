@@ -1,0 +1,13 @@
+http:
+  routers:
+    modernitygate:
+      rule: Host(`modernitygate.com`) || Host(`www.modernitygate.com`)
+      entryPoints:
+        - websecure
+      service: modernitygate-app
+      tls: {}
+  services:
+    modernitygate-app:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:9000"

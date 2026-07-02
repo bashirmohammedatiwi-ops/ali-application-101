@@ -18,7 +18,27 @@
 
 ---
 
-## استكمال إعداد متوقف (منفذ 80 مشغول)
+## Traefik موجود على السيرفر (Hostinger وغيره)
+
+إذا ظهر `traefik` على المنفذ 80/443 **لا تستخدم certbot** — Traefik يدير HTTPS.
+
+```bash
+cd /opt/modernity-gate
+git pull
+sudo sh scripts/resume-setup-traefik.sh
+```
+
+بريد certbot يجب أن يكون إيميل حقيقي (ليس `بريدك@example.com`):
+
+```bash
+sudo CERTBOT_EMAIL=you@gmail.com sh scripts/issue-ssl.sh
+```
+
+(فقط إذا أوقفت Traefik واستخدمت nginx)
+
+---
+
+## استكمال إعداد متوقف (منفذ 80 مشغول — nginx)
 
 إذا توقف `setup-new-vps.sh` عند nginx:
 

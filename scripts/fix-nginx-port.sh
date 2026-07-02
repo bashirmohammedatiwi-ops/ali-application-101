@@ -34,6 +34,17 @@ for cid in $(docker ps -q 2>/dev/null); do
 done
 
 if ss -tlnp | grep -q ':80 '; then
+  if pgrep -x traefik >/dev/null 2>&1 || docker ps --format '{{.Names}}' 2>/dev/null | grep -qi traefik; then
+    echo ""
+    echo "Traefik is using ports 80/443 (SSL already configured)."
+    echo "Use Traefik mode instead of nginx:"
+    echo "  cd $APP_DIR && sudo sh scripts/resume-setup-traefik.sh"
+    echo ""
+    echo "Or stop Traefik to use nginx:"
+    echo "  sudo systemctl stop traefik"
+    echo "  sudo docker stop \$(docker ps -q --filter name=traefik) 2>/dev/null"
+    exit 1
+  fi
   echo ""
   echo "WARNING: Port 80 still in use:"
   ss -tlnp | grep ':80 '
