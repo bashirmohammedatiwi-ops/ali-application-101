@@ -594,7 +594,13 @@ export async function convertInvoiceToUsd(invoiceId: string) {
   revalidatePath("/archive");
 }
 
-export async function updateSettings(data: { usdToCnyRate?: number; usdToIqdRate?: number }) {
+export async function updateSettings(data: {
+  usdToCnyRate?: number;
+  usdToIqdRate?: number;
+  companyAddressAr?: string;
+  companyPhone?: string;
+  companyNameAr?: string;
+}) {
   const user = await requireAuth();
   if (!hasPermission(user.role, "manage_users")) throw new Error("FORBIDDEN");
 

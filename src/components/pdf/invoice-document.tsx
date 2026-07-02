@@ -294,6 +294,8 @@ export function InvoiceDocument({
   const markupAmount = calculateMarkupAmount(invoice.subtotal, invoice.shipping, invoice.markup);
   const productName = item.productNameAr || item.productNameEn || "—";
   const companyName = settings.companyNameAr || BRAND.nameAr;
+  const companyAddress = settings.companyAddressAr || BRAND.addressAr;
+  const companyPhone = settings.companyPhone || BRAND.phone;
   const fmt = (n: number) => formatPdfAmount(n, currency);
 
   const customerLocation = [customer.city, customer.address].filter(Boolean).join(" — ");
@@ -318,8 +320,8 @@ export function InvoiceDocument({
           </View>
           <View style={styles.headerCenter}>
             <Text style={styles.companyName}>{companyName}</Text>
-            <Text style={styles.companySub}>{BRAND.addressAr}</Text>
-            <Text style={styles.companySub}>هاتف: {BRAND.phone}</Text>
+            <Text style={styles.companySub}>{companyAddress}</Text>
+            <Text style={styles.companySub}>هاتف: {companyPhone}</Text>
           </View>
           <View style={styles.titleBadge}>
             <Text style={styles.titleBadgeText}>فاتورة تسعير</Text>
@@ -453,7 +455,7 @@ export function InvoiceDocument({
         <View style={styles.footer}>
           <Text style={styles.thankYou}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</Text>
           <Text style={styles.footerNote}>
-            الأسعار لا تشمل الشحن الدولي · {companyName} · هاتف: {BRAND.phone}
+            الأسعار لا تشمل الشحن الدولي · {companyName} · هاتف: {companyPhone}
           </Text>
         </View>
       </Page>

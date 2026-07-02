@@ -53,6 +53,8 @@ export function AdminPanel({
     role: "ORDER_TAKER" as "ORDER_TAKER" | "PRICER" | "MANAGER",
   });
   const [appSettings, setAppSettings] = useState({
+    companyAddressAr: settings?.companyAddressAr ?? "",
+    companyPhone: settings?.companyPhone ?? "",
     usdToCnyRate: String(settings?.usdToCnyRate ?? 7.2),
     usdToIqdRate: String(settings?.usdToIqdRate ?? 1310),
   });
@@ -68,6 +70,8 @@ export function AdminPanel({
   function handleSaveSettings() {
     startTransition(async () => {
       await updateSettings({
+        companyAddressAr: appSettings.companyAddressAr.trim(),
+        companyPhone: appSettings.companyPhone.trim(),
         usdToCnyRate: parseFloat(appSettings.usdToCnyRate) || 7.2,
         usdToIqdRate: parseFloat(appSettings.usdToIqdRate) || 1310,
       });
@@ -82,6 +86,23 @@ export function AdminPanel({
         icon={<Settings className="h-5 w-5" />}
       >
         <div className="space-y-4">
+          <Input
+            label={t("companyAddress", locale)}
+            hint={t("companyAddressHint", locale)}
+            value={appSettings.companyAddressAr}
+            onChange={(e) =>
+              setAppSettings({ ...appSettings, companyAddressAr: e.target.value })
+            }
+          />
+          <Input
+            label={t("companyPhone", locale)}
+            hint={t("companyPhoneHint", locale)}
+            value={appSettings.companyPhone}
+            onChange={(e) =>
+              setAppSettings({ ...appSettings, companyPhone: e.target.value })
+            }
+            dir="ltr"
+          />
           <Input
             label={t("exchangeRate", locale)}
             hint={t("exchangeRateHint", locale)}

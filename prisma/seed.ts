@@ -54,6 +54,8 @@ async function main() {
       id: "default",
       companyNameAr: "بوابة الحداثة للتجارة العامة",
       companyNameEn: "Modernity Gate for General Trading",
+      companyAddressAr: "بغداد — العراق",
+      companyPhone: "07700000000",
       usdToCnyRate: 7.2,
       usdToIqdRate: 1310,
     },
