@@ -1,4 +1,4 @@
-// Disabled — unregister any old service worker on activate.
+// v3 — clears legacy caches; API/PDF never cached.
 self.addEventListener("install", () => {
   self.skipWaiting();
 });

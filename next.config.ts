@@ -26,6 +26,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/api/invoices/:path*/pdf",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, max-age=0, private",
+          },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Expires", value: "0" },
+        ],
+      },
+      {
         source: "/((?!_next/static|_next/image|favicon.ico|brand|uploads|icon.png|apple-icon.png|manifest.json|sw.js).*)",
         headers: [
           {

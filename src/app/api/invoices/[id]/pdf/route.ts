@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { renderToBuffer } from "@react-pdf/renderer";
-import {
-  InvoiceDocument,
-  PDF_TEMPLATE_VERSION,
-} from "@/components/pdf/invoice-document";
+import { InvoiceDocument } from "@/components/pdf/invoice-document";
+import { PDF_TEMPLATE_VERSION } from "@/lib/pdf-constants";
 import { getOrCreateSettings } from "@/lib/orders";
 import { UNITS } from "@/lib/constants";
 import { resolveLogoPath, resolvePublicAsset } from "@/lib/pdf-assets";
@@ -65,12 +63,12 @@ export async function GET(
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${invoice.invoiceNumber}.pdf"`,
-        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        "Content-Disposition": `attachment; filename="${invoice.invoiceNumber}-${PDF_TEMPLATE_VERSION}.pdf"`,
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0, private",
         Pragma: "no-cache",
         Expires: "0",
         "X-PDF-Template": PDF_TEMPLATE_VERSION,
-        ETag: `"${invoice.id}-${version}"`,
+        ETag: `"${PDF_TEMPLATE_VERSION}-${invoice.id}-${version}"`,
       },
     });
   } catch (error) {

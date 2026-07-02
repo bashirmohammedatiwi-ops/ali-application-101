@@ -84,6 +84,7 @@ export function ActionTile({
   href,
   variant = "default",
   external,
+  pending,
 }: {
   icon: LucideIcon;
   label: string;
@@ -92,6 +93,7 @@ export function ActionTile({
   href?: string;
   variant?: "default" | "accent" | "success" | "whatsapp";
   external?: boolean;
+  pending?: boolean;
 }) {
   const styles = {
     default: "bg-white border-border hover:border-accent/30",
@@ -121,7 +123,7 @@ export function ActionTile({
           iconStyles[variant]
         )}
       >
-        <Icon className="h-5 w-5" strokeWidth={2.25} />
+        <Icon className={cn("h-5 w-5", pending && "animate-spin")} strokeWidth={2.25} />
       </span>
       <span
         className={cn(
@@ -157,7 +159,7 @@ export function ActionTile({
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className="w-full text-start">
+      <button type="button" onClick={onClick} disabled={pending} className="w-full text-start disabled:opacity-60">
         {content}
       </button>
     );

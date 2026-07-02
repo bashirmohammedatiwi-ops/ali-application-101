@@ -16,9 +16,9 @@ import {
   CURRENCY_LABELS_AR,
 } from "@/lib/pdf-format";
 
-registerPdfFonts();
+import { PDF_TEMPLATE_VERSION } from "@/lib/pdf-constants";
 
-export const PDF_TEMPLATE_VERSION = "2026-07-v3";
+registerPdfFonts();
 
 const fontFamily = PDF_FONT_FAMILY;
 

@@ -28,6 +28,7 @@ import {
   convertInvoiceToUsd,
 } from "@/actions/orders";
 import { UNITS } from "@/lib/constants";
+import { openInvoicePdf } from "@/lib/open-invoice-pdf";
 import { buildWhatsAppMessage, formatCurrency } from "@/lib/utils";
 import { calculateMarkupAmount, formatMarkupPercent } from "@/lib/markup";
 import { cnyToUsd, usdToIqd, iqdToUsd } from "@/lib/currency";
@@ -94,6 +95,7 @@ export function InvoiceActions({
   const [returnOpen, setReturnOpen] = useState(false);
   const [repricingOpen, setRepricingOpen] = useState(false);
   const [returnReason, setReturnReason] = useState("");
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const invoice = item.invoice;
   const unitLabel = UNITS[item.unit][locale === "en" ? "en" : "ar"];
@@ -133,6 +135,14 @@ export function InvoiceActions({
     const msg = getWhatsAppMessage();
     if (!msg) return;
     window.open(buildWhatsAppUrl(whatsappPhone, msg), "_blank");
+  }
+
+  function handleOpenPdf() {
+    if (!invoice || pdfLoading) return;
+    setPdfLoading(true);
+    openInvoicePdf(invoice.id, invoice.invoiceNumber, invoice.updatedAt)
+      .catch(() => toast(t("error", locale), "error"))
+      .finally(() => setPdfLoading(false));
   }
 
   function handleArchive() {
@@ -346,11 +356,19 @@ export function InvoiceActions({
       <SectionTitle title={t("actions", locale)} />
       <div className="grid grid-cols-2 gap-3">
         <ActionTile
-          icon={Download}
+          icon={pdfLoading ? Loader2 : Download}
           label="PDF"
-          sublabel={locale === "en" ? "Download" : "تحميل"}
-          href={`/api/invoices/${invoice.id}/pdf?v=${new Date(invoice.updatedAt).getTime()}`}
-          external
+          sublabel={
+            pdfLoading
+              ? locale === "en"
+                ? "Loading..."
+                : "جاري التحميل..."
+              : locale === "en"
+                ? "Download"
+                : "تحميل"
+          }
+          onClick={handleOpenPdf}
+          pending={pdfLoading}
         />
         <ActionTile
           icon={copied ? Check : Copy}
