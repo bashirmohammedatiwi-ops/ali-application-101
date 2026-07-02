@@ -5,7 +5,11 @@ set -e
 APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 TRAEFIK_DIR="${TRAEFIK_DIR:-/docker/traefik}"
 DOMAIN="${DOMAIN:-modernitygate.com}"
-CERT_RESOLVER="${CERT_RESOLVER:-letsencrypt}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/traefik-detect-env.sh"
+
+CERT_RESOLVER="${CERT_RESOLVER:-$TRAEFIK_CERT_RESOLVER}"
+HTTPS_ENTRYPOINT="${HTTPS_ENTRYPOINT:-$TRAEFIK_HTTPS_ENTRYPOINT}"
 
 TRAEFIK_CID=$(docker ps -q --filter "name=traefik" | head -1)
 if [ -z "$TRAEFIK_CID" ]; then
@@ -21,7 +25,7 @@ TRAEFIK_NET=$(docker inspect "$TRAEFIK_CID" --format '{{range $k,$v := .NetworkS
 NETMODE=$(docker inspect "$TRAEFIK_CID" --format '{{.HostConfig.NetworkMode}}' 2>/dev/null || true)
 
 # Detect cert resolver name from Traefik static config if present
-if [ -d "$TRAEFIK_DIR" ]; then
+if [ -d "$TRAEFIK_DIR" ] && [ "$CERT_RESOLVER" = "letsencrypt" ]; then
   FOUND=$(grep -rhoE 'certResolver:\s*[a-zA-Z0-9_.-]+' "$TRAEFIK_DIR" 2>/dev/null | awk '{print $2}' | head -1 || true)
   if [ -z "$FOUND" ]; then
     FOUND=$(grep -A20 'certificatesResolvers:' "$TRAEFIK_DIR"/traefik.yml "$TRAEFIK_DIR"/traefik.yaml 2>/dev/null \
@@ -41,6 +45,7 @@ if [ -n "$TRAEFIK_NET" ] && [ "$NETMODE" != "host" ]; then
 fi
 
 echo "Traefik network: ${TRAEFIK_NET:-none} (mode=$NETMODE)"
+echo "HTTPS entrypoint: $HTTPS_ENTRYPOINT"
 echo "Cert resolver: $CERT_RESOLVER"
 
 # Docker labels — works with Traefik docker provider (Hostinger default)
@@ -54,7 +59,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.modernitygate.rule=Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
-      - traefik.http.routers.modernitygate.entrypoints=websecure
+      - traefik.http.routers.modernitygate.entrypoints=${HTTPS_ENTRYPOINT}
       - traefik.http.routers.modernitygate.tls=true
       - traefik.http.routers.modernitygate.tls.certresolver=${CERT_RESOLVER}
 ${TLS_DOMAIN_LABELS}
@@ -74,7 +79,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.modernitygate.rule=Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
-      - traefik.http.routers.modernitygate.entrypoints=websecure
+      - traefik.http.routers.modernitygate.entrypoints=${HTTPS_ENTRYPOINT}
       - traefik.http.routers.modernitygate.tls=true
       - traefik.http.routers.modernitygate.tls.certresolver=${CERT_RESOLVER}
 ${TLS_DOMAIN_LABELS}
@@ -92,9 +97,11 @@ mkdir -p "$TRAEFIK_DIR/etc/traefik/dynamic" 2>/dev/null || true
 
 INSTALLED=""
 for dir in \
-  "$TRAEFIK_DIR/etc/traefik/dynamic" \
-  "$TRAEFIK_DIR/dynamic"; do
-  if [ -d "$dir" ]; then
+  "$TRAEFIK_DIR/dynamic" \
+  "$TRAEFIK_DIR/data/dynamic" \
+  "$TRAEFIK_DIR/config/dynamic" \
+  "$TRAEFIK_DIR/etc/traefik/dynamic"; do
+  if [ -d "$dir" ] || mkdir -p "$dir" 2>/dev/null; then
     cp "$ROUTE_FILE" "$dir/modernitygate.yml"
     echo "Dynamic file: $dir/modernitygate.yml"
     INSTALLED=1
@@ -114,3 +121,8 @@ docker inspect "$TRAEFIK_CID" --format '{{range .Mounts}}{{.Source}} {{.Destinat
     done
 
 [ -n "$INSTALLED" ] || echo "No dynamic directory found (Docker labels should be enough)"
+
+if [ -n "$INSTALLED" ] && [ -n "$TRAEFIK_CID" ]; then
+  echo "Reloading Traefik..."
+  docker kill -s HUP "$TRAEFIK_CID" 2>/dev/null || docker restart "$TRAEFIK_CID" 2>/dev/null || true
+fi

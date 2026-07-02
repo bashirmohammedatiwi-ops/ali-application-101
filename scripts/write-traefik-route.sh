@@ -4,7 +4,11 @@ set -e
 
 APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 DOMAIN="${DOMAIN:-modernitygate.com}"
-CERT_RESOLVER="${CERT_RESOLVER:-letsencrypt}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/traefik-detect-env.sh"
+
+CERT_RESOLVER="${CERT_RESOLVER:-$TRAEFIK_CERT_RESOLVER}"
+HTTPS_ENTRYPOINT="${HTTPS_ENTRYPOINT:-$TRAEFIK_HTTPS_ENTRYPOINT}"
 OUT="${1:-$APP_DIR/deploy/traefik/modernitygate.generated.yml}"
 
 detect_backend() {
@@ -43,7 +47,7 @@ http:
     modernitygate:
       rule: Host(\`${DOMAIN}\`) || Host(\`www.${DOMAIN}\`)
       entryPoints:
-        - websecure
+        - ${HTTPS_ENTRYPOINT}
       service: modernitygate-app
       tls:
         certResolver: ${CERT_RESOLVER}
@@ -55,4 +59,5 @@ http:
 EOF
 
 echo "Backend: $BACKEND"
+echo "Entrypoint: $HTTPS_ENTRYPOINT"
 echo "Written: $OUT"

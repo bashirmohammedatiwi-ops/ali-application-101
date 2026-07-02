@@ -3,6 +3,7 @@
 set -e
 
 APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DOMAIN="modernitygate.com"
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -11,7 +12,9 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 cd "$APP_DIR"
-SRC="$APP_DIR/deploy/traefik/modernitygate.yml"
+ROUTE_FILE="$APP_DIR/deploy/traefik/modernitygate.generated.yml"
+sh "$SCRIPT_DIR/write-traefik-route.sh" "$ROUTE_FILE"
+SRC="$ROUTE_FILE"
 INSTALLED=""
 
 install_to_host_dir() {

@@ -209,21 +209,16 @@ sudo sh scripts/fix-ssl-traefik.sh
 
 ## 404 بعد النشر؟
 
-من الآن `./scripts/deploy-vps.sh` يتحقق تلقائياً من المسار و**يفشل النشر** إذا بقي 404، ويحاول إصلاحه ذاتياً.
-
-إذا ظهر 404 يدوياً:
+**إصلاح فوري (أمر واحد):**
 
 ```bash
 cd /opt/modernity-gate
+rm -f docker-compose.traefik-net.yml   # إذا منع git pull
 git pull
-sudo sh scripts/verify-routing.sh
+sudo sh scripts/fix-404-now.sh
 ```
 
-أو إعداد كامل:
-
-```bash
-sudo sh scripts/finalize-vps.sh
-```
+`deploy-vps.sh` يتحقق تلقائياً ويفشل إذا بقي 404.
 
 تحقق:
 

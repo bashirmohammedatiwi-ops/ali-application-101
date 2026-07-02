@@ -62,11 +62,22 @@ echo "Traefik labels: OK"
 
 # Refresh dynamic route file (backend URL may change after recreate)
 sh "$SCRIPT_DIR/install-traefik-route.sh"
-sleep 3
+sleep 4
 
 if check_https; then
   echo "Routing verified: https://${DOMAIN}/login"
   exit 0
+fi
+
+TRAEFIK_CID=$(docker ps -q --filter "name=traefik" 2>/dev/null | head -1)
+if [ -n "$TRAEFIK_CID" ]; then
+  echo "Restarting Traefik..."
+  docker restart "$TRAEFIK_CID"
+  sleep 5
+  if check_https; then
+    echo "Routing verified after Traefik restart: https://${DOMAIN}/login"
+    exit 0
+  fi
 fi
 
 echo ""
