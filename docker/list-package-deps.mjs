@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { spawnSync } from "child_process";
 
 const root = path.join(process.cwd(), "node_modules");
 const queue = process.argv.slice(2);
@@ -11,7 +12,15 @@ if (queue.length === 0) {
 
 const seen = new Set();
 
-function pkgDir(name) {
+function resolveDir(name) {
+  const result = spawnSync("node", ["docker/resolve-package-dir.mjs", name], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+  if (result.status === 0) {
+    const dir = result.stdout.trim();
+    if (dir && fs.existsSync(dir)) return dir;
+  }
   const direct = path.join(root, name);
   return fs.existsSync(direct) ? direct : null;
 }
@@ -20,7 +29,7 @@ while (queue.length > 0) {
   const name = queue.shift();
   if (seen.has(name)) continue;
 
-  const dir = pkgDir(name);
+  const dir = resolveDir(name);
   if (!dir) continue;
 
   seen.add(name);
