@@ -20,7 +20,26 @@
 
 ## Traefik موجود على السيرفر (Hostinger وغيره)
 
-إذا ظهر `traefik` على المنفذ 80/443 **لا تستخدم certbot** — Traefik يدير HTTPS.
+إذا ظهر `traefik-traefik-1` أو المسار `/docker/traefik` — **استخدم Traefik** (لديه Let's Encrypt مدمج).
+
+```bash
+cd /opt/modernity-gate
+git pull
+sudo sh scripts/start-traefik-stack.sh
+```
+
+هذا يوقف nginx، يشغّل Traefik من `/docker/traefik`، ويوجّه الدومين للتطبيق على `:9000`.
+
+**لا تستخدم certbot/nginx** إذا الدومين يمر عبر CDN Hostinger (`server: hcdn`) — HTTP challenge يفشل.
+
+### فشل certbot مع IP مختلف (مثل 2.57.91.91)
+
+الدومين يشير إلى CDN وليس السيرفر مباشرة. في لوحة Hostinger:
+1. أوقف CDN/Proxy للدومين
+2. A record → IP السيرفر (`curl -4 ifconfig.me`)
+3. انتظر 5–15 دقيقة ثم `sudo sh scripts/preflight-dns.sh`
+
+أو استمر مع Traefik: `sudo sh scripts/start-traefik-stack.sh`
 
 ```bash
 cd /opt/modernity-gate

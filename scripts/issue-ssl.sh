@@ -15,6 +15,8 @@ fi
 
 cd "$APP_DIR"
 
+sh "$(dirname "$0")/preflight-dns.sh" "$DOMAIN" || exit 1
+
 echo "=== Requesting certificate for $DOMAIN and www.$DOMAIN ==="
 certbot certonly --webroot -w /var/www/certbot \
   -d "$DOMAIN" -d "www.$DOMAIN" \

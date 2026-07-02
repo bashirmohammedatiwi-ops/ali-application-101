@@ -34,6 +34,13 @@ for cid in $(docker ps -q 2>/dev/null); do
 done
 
 if ss -tlnp | grep -q ':80 '; then
+  if ss -tlnp | grep ':80 ' | grep -q nginx; then
+    if [ -f /etc/nginx/sites-enabled/modernitygate.conf ] || [ -f /etc/nginx/sites-available/modernitygate.conf ]; then
+      echo ""
+      echo "Nginx already configured on port 80 (OK)."
+      nginx -t 2>/dev/null && systemctl is-active --quiet nginx && exit 0
+    fi
+  fi
   if pgrep -x traefik >/dev/null 2>&1 || docker ps --format '{{.Names}}' 2>/dev/null | grep -qi traefik; then
     echo ""
     echo "Traefik is using ports 80/443 (SSL already configured)."
