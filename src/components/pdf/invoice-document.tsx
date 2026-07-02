@@ -18,313 +18,247 @@ import {
 
 registerPdfFonts();
 
-export const PDF_TEMPLATE_VERSION = "2026-07-v2";
+export const PDF_TEMPLATE_VERSION = "2026-07-v3";
 
 const fontFamily = PDF_FONT_FAMILY;
 
 const C = {
   primary: BRAND.primary,
   accent: BRAND.accent,
-  accentLight: BRAND.accentLight,
-  accentDark: BRAND.accentDark,
-  muted: BRAND.muted,
-  border: "#E8E4DF",
+  accentLight: "#FFF8F4",
+  accentSoft: "#FDE8DC",
+  muted: "#8A8580",
+  border: "#E5E0DA",
   white: "#FFFFFF",
-  tableHead: "#3C3C3B",
+  ink: "#2A2928",
+  paper: "#FDFCFB",
 };
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 0,
-    paddingBottom: 36,
-    paddingHorizontal: 36,
     fontFamily,
-    fontSize: 10,
-    color: C.primary,
+    fontSize: 8.5,
+    color: C.ink,
     direction: "rtl",
+    backgroundColor: C.white,
+    paddingBottom: 28,
+    paddingHorizontal: 28,
+    paddingTop: 0,
   },
-  topBand: {
+
+  /* ── Header band ── */
+  headerBand: {
+    marginHorizontal: -28,
+    marginBottom: 14,
+    backgroundColor: C.primary,
+    paddingHorizontal: 28,
+    paddingTop: 18,
+    paddingBottom: 14,
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  headerAccentLine: {
     position: "absolute",
-    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    height: 6,
+    height: 3,
     backgroundColor: C.accent,
   },
-  header: {
-    marginTop: 20,
-    marginBottom: 18,
-    flexDirection: "row-reverse",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 16,
-  },
-  logoWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    border: `2 solid ${C.accent}`,
-    backgroundColor: C.accentLight,
+  logoFrame: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: C.white,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
+    border: `2 solid ${C.accent}`,
   },
-  logoImage: {
-    width: 56,
-    height: 56,
-    objectFit: "contain",
-  },
-  logoFallback: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: C.accent,
-  },
-  companyBlock: {
-    flex: 1,
-    alignItems: "flex-end",
-  },
+  logoImg: { width: 38, height: 38, objectFit: "contain" },
+  logoLetter: { fontSize: 18, fontWeight: 700, color: C.accent },
+  headerCenter: { flex: 1, alignItems: "flex-end" },
   companyName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: 700,
-    color: C.primary,
+    color: C.white,
     textAlign: "right",
-    marginBottom: 4,
+    marginBottom: 3,
   },
-  companyMeta: {
-    fontSize: 9,
-    color: C.muted,
-    textAlign: "right",
-    marginBottom: 2,
+  companySub: { fontSize: 7.5, color: "#C8C4BE", textAlign: "right", lineHeight: 1.4 },
+  titleBadge: {
+    backgroundColor: C.accent,
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: "center",
   },
-  invoiceBadge: {
-    alignItems: "flex-start",
-    minWidth: 120,
-  },
-  invoiceTitle: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: C.accent,
-    textAlign: "left",
-  },
-  invoiceSubtitle: {
-    fontSize: 8,
-    color: C.muted,
-    marginTop: 2,
-    textAlign: "left",
-  },
-  metaStrip: {
+  titleBadgeText: { fontSize: 11, fontWeight: 700, color: C.white },
+  titleBadgeSub: { fontSize: 6.5, color: "#FFFFFFCC", marginTop: 2 },
+
+  /* ── Meta chips row ── */
+  chipsRow: {
     flexDirection: "row-reverse",
-    backgroundColor: C.accentLight,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 14,
-    border: `1 solid ${C.border}`,
+    gap: 6,
+    marginBottom: 10,
   },
-  metaItem: {
+  chip: {
     flex: 1,
+    backgroundColor: C.accentLight,
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    border: `1 solid ${C.accentSoft}`,
     alignItems: "flex-end",
   },
-  metaLabel: {
-    fontSize: 8,
-    color: C.muted,
-    marginBottom: 2,
-  },
-  metaValue: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: C.primary,
-  },
-  metaDivider: {
-    width: 1,
-    backgroundColor: C.border,
-    marginHorizontal: 12,
-  },
-  sectionRow: {
+  chipLabel: { fontSize: 6.5, color: C.muted, marginBottom: 2 },
+  chipValue: { fontSize: 8.5, fontWeight: 700, color: C.ink },
+
+  /* ── Customer strip ── */
+  customerStrip: {
     flexDirection: "row-reverse",
-    gap: 12,
-    marginBottom: 14,
-  },
-  infoCard: {
-    flex: 1,
+    backgroundColor: C.paper,
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: C.white,
-  },
-  cardTitle: {
-    fontSize: 9,
-    fontWeight: 700,
-    color: C.accent,
-    marginBottom: 8,
-    textAlign: "right",
-    paddingBottom: 6,
-    borderBottom: `1 solid ${C.border}`,
-  },
-  infoLine: {
-    flexDirection: "row-reverse",
-    justifyContent: "space-between",
-    marginBottom: 5,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    marginBottom: 10,
     gap: 8,
   },
-  infoLabel: {
-    fontSize: 9,
-    color: C.muted,
-    textAlign: "right",
-  },
-  infoValue: {
-    fontSize: 9,
-    fontWeight: 700,
-    color: C.primary,
-    textAlign: "left",
-    maxWidth: "60%",
-  },
+  customerField: { flex: 1, alignItems: "flex-end" },
+  customerLabel: { fontSize: 6.5, color: C.muted, marginBottom: 2 },
+  customerValue: { fontSize: 8.5, fontWeight: 700, color: C.ink },
+
+  /* ── Product table ── */
   table: {
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
-    borderRadius: 10,
     overflow: "hidden",
-    marginBottom: 14,
+    marginBottom: 10,
   },
   tableHead: {
     flexDirection: "row-reverse",
-    backgroundColor: C.tableHead,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+    backgroundColor: C.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
   },
-  th: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: C.white,
-    textAlign: "center",
-  },
-  tableRow: {
+  th: { fontSize: 7, fontWeight: 700, color: C.white, textAlign: "center" },
+  tableBody: {
     flexDirection: "row-reverse",
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderTop: `1 solid ${C.border}`,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
     alignItems: "center",
     backgroundColor: C.white,
+    minHeight: 44,
   },
-  td: {
-    fontSize: 9,
-    textAlign: "center",
-    color: C.primary,
-  },
-  tdBold: {
-    fontSize: 9,
-    fontWeight: 700,
-    textAlign: "center",
-    color: C.primary,
-  },
-  productImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 6,
+  td: { fontSize: 8, textAlign: "center", color: C.ink },
+  tdBold: { fontSize: 8, fontWeight: 700, textAlign: "center", color: C.ink },
+  productImg: {
+    width: 36,
+    height: 36,
+    borderRadius: 4,
     objectFit: "cover",
     border: `1 solid ${C.border}`,
   },
-  imagePlaceholder: {
-    width: 52,
-    height: 52,
-    borderRadius: 6,
+  imgPlaceholder: {
+    width: 36,
+    height: 36,
+    borderRadius: 4,
     backgroundColor: C.accentLight,
-    border: `1 dashed ${C.accent}`,
     alignItems: "center",
     justifyContent: "center",
+    border: `1 dashed ${C.accent}`,
   },
-  imagePlaceholderText: {
-    fontSize: 7,
-    color: C.accent,
-  },
-  bottomRow: {
+  imgPlaceholderTxt: { fontSize: 5.5, color: C.accent },
+
+  colNum: { width: "5%" },
+  colImg: { width: "11%" },
+  colName: { width: "28%" },
+  colQty: { width: "14%" },
+  colUnit: { width: "18%" },
+  colSum: { width: "24%" },
+
+  /* ── Bottom split ── */
+  bottomSplit: {
     flexDirection: "row-reverse",
-    gap: 12,
-    marginBottom: 14,
+    gap: 8,
+    marginBottom: 10,
   },
-  logisticsCard: {
-    flex: 1,
+  logisticsBox: {
+    flex: 1.1,
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: "#FAFAF9",
+    backgroundColor: C.paper,
+    padding: 8,
   },
-  totalsCard: {
-    flex: 1,
+  totalsBox: {
+    flex: 0.9,
+    borderRadius: 6,
     border: `1 solid ${C.border}`,
-    borderRadius: 10,
-    padding: 12,
     backgroundColor: C.white,
+    padding: 8,
   },
-  totalLine: {
+  boxTitle: {
+    fontSize: 7.5,
+    fontWeight: 700,
+    color: C.accent,
+    marginBottom: 6,
+    textAlign: "right",
+    paddingBottom: 4,
+    borderBottom: `1 solid ${C.border}`,
+  },
+  specRow: {
+    flexDirection: "row-reverse",
+    flexWrap: "wrap",
+    gap: 4,
+    marginBottom: 4,
+  },
+  specPill: {
+    backgroundColor: C.white,
+    borderRadius: 4,
+    border: `1 solid ${C.border}`,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    flexDirection: "row-reverse",
+    gap: 3,
+    alignItems: "center",
+  },
+  specLabel: { fontSize: 6.5, color: C.muted },
+  specValue: { fontSize: 7.5, fontWeight: 700, color: C.ink },
+  noteLine: { fontSize: 7, color: C.muted, textAlign: "right", lineHeight: 1.35, marginTop: 2 },
+
+  totalRow: {
     flexDirection: "row-reverse",
     justifyContent: "space-between",
-    marginBottom: 7,
-    paddingBottom: 7,
+    marginBottom: 4,
+    paddingBottom: 4,
     borderBottom: `1 dashed ${C.border}`,
   },
-  totalLabel: {
-    fontSize: 9,
-    color: C.muted,
-    textAlign: "right",
-  },
-  totalValue: {
-    fontSize: 9,
-    fontWeight: 700,
-    color: C.primary,
-    textAlign: "left",
-  },
-  grandTotalBox: {
-    marginTop: 6,
+  totalLbl: { fontSize: 7.5, color: C.muted },
+  totalVal: { fontSize: 7.5, fontWeight: 700, color: C.ink },
+  grandBox: {
+    marginTop: 4,
     backgroundColor: C.accent,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    borderRadius: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     flexDirection: "row-reverse",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  grandTotalLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: C.white,
-  },
-  grandTotalValue: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: C.white,
-  },
-  noteText: {
-    fontSize: 8,
-    color: C.muted,
-    textAlign: "right",
-    lineHeight: 1.5,
-    marginTop: 4,
-  },
+  grandLbl: { fontSize: 9, fontWeight: 700, color: C.white },
+  grandVal: { fontSize: 11, fontWeight: 700, color: C.white },
+
+  /* ── Footer ── */
   footer: {
-    marginTop: 8,
-    borderTop: `2 solid ${C.accent}`,
-    paddingTop: 12,
+    borderTop: `1.5 solid ${C.accent}`,
+    paddingTop: 8,
     alignItems: "center",
   },
-  thankYou: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: C.accent,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  footerNote: {
-    fontSize: 8,
-    color: C.muted,
-    textAlign: "center",
-    lineHeight: 1.4,
-  },
-  colIndex: { width: "6%" },
-  colImage: { width: "14%" },
-  colProduct: { width: "30%" },
-  colQty: { width: "12%" },
-  colPrice: { width: "18%" },
-  colTotal: { width: "20%" },
+  thankYou: { fontSize: 9, fontWeight: 700, color: C.accent, marginBottom: 3, textAlign: "center" },
+  footerNote: { fontSize: 6.5, color: C.muted, textAlign: "center", lineHeight: 1.3 },
 });
 
 type InvoiceDocProps = {
@@ -337,20 +271,11 @@ type InvoiceDocProps = {
   productImageSrc?: string | null;
 };
 
-function InfoLine({ label, value }: { label: string; value: string }) {
+function SpecPill({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.infoLine}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
-}
-
-function TotalLine({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <View style={styles.totalLine}>
-      <Text style={styles.totalLabel}>{label}</Text>
-      <Text style={[styles.totalValue, accent ? { color: C.accent } : {}]}>{value}</Text>
+    <View style={styles.specPill}>
+      <Text style={styles.specLabel}>{label}</Text>
+      <Text style={styles.specValue}>{value}</Text>
     </View>
   );
 }
@@ -368,148 +293,158 @@ export function InvoiceDocument({
   const currencyName = CURRENCY_LABELS_AR[currency] ?? currency;
   const markupAmount = calculateMarkupAmount(invoice.subtotal, invoice.shipping, invoice.markup);
   const productName = item.productNameAr || item.productNameEn || "—";
-  const customerWhatsapp = customer.whatsapp || customer.phone;
   const companyName = settings.companyNameAr || BRAND.nameAr;
   const fmt = (n: number) => formatPdfAmount(n, currency);
 
+  const customerLocation = [customer.city, customer.address].filter(Boolean).join(" — ");
+  const hasSpecs =
+    item.weightKg != null ||
+    item.volumeCbm != null ||
+    item.moq != null ||
+    item.leadTimeDays != null;
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.topBand} />
-
+      <Page size="A4" style={styles.page} wrap={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.companyBlock}>
-            <Text style={styles.companyName}>{companyName}</Text>
-            <Text style={styles.companyMeta}>{BRAND.addressAr}</Text>
-            <Text style={styles.companyMeta}>هاتف: {BRAND.phone}</Text>
-            <Text style={styles.companyMeta}>واتساب: {BRAND.whatsapp}</Text>
-          </View>
-
-          <View style={styles.logoWrap}>
+        <View style={styles.headerBand}>
+          <View style={styles.headerAccentLine} />
+          <View style={styles.logoFrame}>
             {logoSrc ? (
-              <Image src={logoSrc} style={styles.logoImage} />
+              <Image src={logoSrc} style={styles.logoImg} />
             ) : (
-              <Text style={styles.logoFallback}>م</Text>
+              <Text style={styles.logoLetter}>م</Text>
             )}
           </View>
-
-          <View style={styles.invoiceBadge}>
-            <Text style={styles.invoiceTitle}>فاتورة تسعير</Text>
-            <Text style={styles.invoiceSubtitle}>عرض سعر رسمي</Text>
+          <View style={styles.headerCenter}>
+            <Text style={styles.companyName}>{companyName}</Text>
+            <Text style={styles.companySub}>{BRAND.addressAr}</Text>
+            <Text style={styles.companySub}>هاتف: {BRAND.phone}</Text>
+          </View>
+          <View style={styles.titleBadge}>
+            <Text style={styles.titleBadgeText}>فاتورة تسعير</Text>
+            <Text style={styles.titleBadgeSub}>عرض سعر رسمي</Text>
           </View>
         </View>
 
-        {/* Invoice meta */}
-        <View style={styles.metaStrip}>
-          <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>رقم الفاتورة</Text>
-            <Text style={styles.metaValue}>{invoice.invoiceNumber}</Text>
+        {/* Meta chips */}
+        <View style={styles.chipsRow}>
+          <View style={styles.chip}>
+            <Text style={styles.chipLabel}>رقم الفاتورة</Text>
+            <Text style={styles.chipValue}>{invoice.invoiceNumber}</Text>
           </View>
-          <View style={styles.metaDivider} />
-          <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>التاريخ</Text>
-            <Text style={styles.metaValue}>{formatPdfDate(invoice.createdAt)}</Text>
+          <View style={styles.chip}>
+            <Text style={styles.chipLabel}>التاريخ</Text>
+            <Text style={styles.chipValue}>{formatPdfDate(invoice.createdAt)}</Text>
           </View>
-          <View style={styles.metaDivider} />
-          <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>رقم الطلب</Text>
-            <Text style={styles.metaValue}>{item.refNumber}</Text>
+          <View style={styles.chip}>
+            <Text style={styles.chipLabel}>رقم الطلب</Text>
+            <Text style={styles.chipValue}>{item.refNumber}</Text>
           </View>
-          <View style={styles.metaDivider} />
-          <View style={styles.metaItem}>
-            <Text style={styles.metaLabel}>العملة</Text>
-            <Text style={styles.metaValue}>{currencyName}</Text>
+          <View style={styles.chip}>
+            <Text style={styles.chipLabel}>العملة</Text>
+            <Text style={styles.chipValue}>{currencyName}</Text>
           </View>
         </View>
 
-        {/* Customer info */}
-        <View style={styles.sectionRow}>
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>بيانات العميل</Text>
-            <InfoLine label="اسم العميل" value={customer.name} />
-            <InfoLine label="رقم الهاتف" value={customer.phone} />
-            <InfoLine label="واتساب" value={customerWhatsapp} />
-            {customer.address ? (
-              <InfoLine label="العنوان" value={customer.address} />
-            ) : null}
-            {customer.city ? <InfoLine label="المدينة" value={customer.city} /> : null}
+        {/* Customer */}
+        <View style={styles.customerStrip}>
+          <View style={styles.customerField}>
+            <Text style={styles.customerLabel}>اسم العميل</Text>
+            <Text style={styles.customerValue}>{customer.name}</Text>
           </View>
+          <View style={styles.customerField}>
+            <Text style={styles.customerLabel}>رقم الهاتف</Text>
+            <Text style={styles.customerValue}>{customer.phone}</Text>
+          </View>
+          {customerLocation ? (
+            <View style={[styles.customerField, { flex: 1.4 }]}>
+              <Text style={styles.customerLabel}>العنوان</Text>
+              <Text style={styles.customerValue}>{customerLocation}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Product table */}
         <View style={styles.table}>
           <View style={styles.tableHead}>
-            <Text style={[styles.th, styles.colIndex]}>#</Text>
-            <Text style={[styles.th, styles.colImage]}>صورة</Text>
-            <Text style={[styles.th, styles.colProduct]}>اسم المنتج</Text>
-            <Text style={[styles.th, styles.colQty]}>عدد القطع</Text>
-            <Text style={[styles.th, styles.colPrice]}>سعر القطعة</Text>
-            <Text style={[styles.th, styles.colTotal]}>المجموع</Text>
+            <Text style={[styles.th, styles.colNum]}>#</Text>
+            <Text style={[styles.th, styles.colImg]}>صورة</Text>
+            <Text style={[styles.th, styles.colName]}>اسم المنتج</Text>
+            <Text style={[styles.th, styles.colQty]}>العدد</Text>
+            <Text style={[styles.th, styles.colUnit]}>سعر القطعة</Text>
+            <Text style={[styles.th, styles.colSum]}>المجموع</Text>
           </View>
-          <View style={styles.tableRow}>
-            <Text style={[styles.td, styles.colIndex]}>1</Text>
-            <View style={[styles.colImage, { alignItems: "center" }]}>
+          <View style={styles.tableBody}>
+            <Text style={[styles.td, styles.colNum]}>1</Text>
+            <View style={[styles.colImg, { alignItems: "center" }]}>
               {productImageSrc ? (
-                <Image src={productImageSrc} style={styles.productImage} />
+                <Image src={productImageSrc} style={styles.productImg} />
               ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Text style={styles.imagePlaceholderText}>بدون صورة</Text>
+                <View style={styles.imgPlaceholder}>
+                  <Text style={styles.imgPlaceholderTxt}>—</Text>
                 </View>
               )}
             </View>
-            <Text style={[styles.tdBold, styles.colProduct]}>{productName}</Text>
+            <Text style={[styles.tdBold, styles.colName]}>{productName}</Text>
             <Text style={[styles.td, styles.colQty]}>
               {item.quantity} {unitLabel}
             </Text>
-            <Text style={[styles.td, styles.colPrice]}>
-              {fmt(item.unitPrice ?? 0)}
-            </Text>
-            <Text style={[styles.tdBold, styles.colTotal]}>{fmt(invoice.subtotal)}</Text>
+            <Text style={[styles.td, styles.colUnit]}>{fmt(item.unitPrice ?? 0)}</Text>
+            <Text style={[styles.tdBold, styles.colSum]}>{fmt(invoice.subtotal)}</Text>
           </View>
         </View>
 
-        {/* Bottom: logistics + totals */}
-        <View style={styles.bottomRow}>
-          <View style={styles.logisticsCard}>
-            <Text style={styles.cardTitle}>تفاصيل الشحن والقياس</Text>
-            {item.weightKg != null ? (
-              <InfoLine label="الوزن" value={`${item.weightKg} كغ`} />
+        {/* Bottom: specs + totals */}
+        <View style={styles.bottomSplit}>
+          <View style={styles.logisticsBox}>
+            <Text style={styles.boxTitle}>الوزن والحجم</Text>
+            {hasSpecs ? (
+              <View style={styles.specRow}>
+                {item.weightKg != null && (
+                  <SpecPill label="الوزن" value={`${item.weightKg} كغ`} />
+                )}
+                {item.volumeCbm != null && (
+                  <SpecPill label="الحجم" value={`${item.volumeCbm} م³`} />
+                )}
+                {item.moq != null && (
+                  <SpecPill label="الحد الأدنى" value={`${item.moq} ${unitLabel}`} />
+                )}
+                {item.leadTimeDays != null && (
+                  <SpecPill label="التجهيز" value={`${item.leadTimeDays} يوم`} />
+                )}
+              </View>
             ) : (
-              <InfoLine label="الوزن" value="—" />
+              <Text style={styles.noteLine}>—</Text>
             )}
-            {item.volumeCbm != null ? (
-              <InfoLine label="الحجم (CBM)" value={`${item.volumeCbm} م³`} />
-            ) : (
-              <InfoLine label="الحجم (CBM)" value="—" />
-            )}
-            {item.moq != null ? (
-              <InfoLine label="الحد الأدنى للطلب" value={`${item.moq} ${unitLabel}`} />
-            ) : null}
-            {item.leadTimeDays != null ? (
-              <InfoLine label="مدة التجهيز" value={`${item.leadTimeDays} يوم`} />
-            ) : null}
             {item.pricerNotes ? (
-              <Text style={styles.noteText}>ملاحظة: {item.pricerNotes}</Text>
+              <Text style={styles.noteLine}>ملاحظة: {item.pricerNotes}</Text>
             ) : null}
           </View>
 
-          <View style={styles.totalsCard}>
-            <Text style={styles.cardTitle}>ملخص المبالغ</Text>
-            <TotalLine label="تكلفة المنتج" value={fmt(invoice.subtotal)} />
-            <TotalLine label="أجور الشحن الداخلي" value={`+ ${fmt(invoice.shipping)}`} />
-            {invoice.markup > 0 ? (
-              <TotalLine
-                label={`عمولة المكتب (${formatMarkupPercent(invoice.markup)})`}
-                value={`+ ${fmt(markupAmount)}`}
-                accent
-              />
-            ) : (
-              <TotalLine label="عمولة المكتب" value="—" />
-            )}
-            <View style={styles.grandTotalBox}>
-              <Text style={styles.grandTotalLabel}>الإجمالي النهائي</Text>
-              <Text style={styles.grandTotalValue}>{fmt(invoice.grandTotal)}</Text>
+          <View style={styles.totalsBox}>
+            <Text style={styles.boxTitle}>ملخص المبالغ</Text>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLbl}>تكلفة المنتج</Text>
+              <Text style={styles.totalVal}>{fmt(invoice.subtotal)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLbl}>أجور الشحن الداخلي</Text>
+              <Text style={styles.totalVal}>+ {fmt(invoice.shipping)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLbl}>
+                {invoice.markup > 0
+                  ? `عمولة المكتب (${formatMarkupPercent(invoice.markup)})`
+                  : "عمولة المكتب"}
+              </Text>
+              <Text style={[styles.totalVal, invoice.markup > 0 ? { color: C.accent } : {}]}>
+                {invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—"}
+              </Text>
+            </View>
+            <View style={styles.grandBox}>
+              <Text style={styles.grandLbl}>الإجمالي النهائي</Text>
+              <Text style={styles.grandVal}>{fmt(invoice.grandTotal)}</Text>
             </View>
           </View>
         </View>
@@ -518,13 +453,7 @@ export function InvoiceDocument({
         <View style={styles.footer}>
           <Text style={styles.thankYou}>شكراً لثقتكم بنا — نسعد بخدمتكم دائماً</Text>
           <Text style={styles.footerNote}>
-            الأسعار المذكورة لا تشمل الشحن الدولي ما لم يُذكر خلاف ذلك.
-          </Text>
-          <Text style={styles.footerNote}>
-            {companyName} · واتساب: {BRAND.whatsapp}
-          </Text>
-          <Text style={[styles.footerNote, { marginTop: 6, fontSize: 7, textAlign: "center" }]}>
-            {PDF_TEMPLATE_VERSION}
+            الأسعار لا تشمل الشحن الدولي · {companyName} · هاتف: {BRAND.phone}
           </Text>
         </View>
       </Page>
