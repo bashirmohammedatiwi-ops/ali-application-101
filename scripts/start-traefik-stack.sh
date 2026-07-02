@@ -4,7 +4,10 @@ set -e
 
 APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 TRAEFIK_DIR="${TRAEFIK_DIR:-/docker/traefik}"
-SRC="$APP_DIR/deploy/traefik/modernitygate.yml"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROUTE_FILE="$APP_DIR/deploy/traefik/modernitygate.generated.yml"
+sh "$SCRIPT_DIR/write-traefik-route.sh" "$ROUTE_FILE"
+SRC="$ROUTE_FILE"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Run as root"

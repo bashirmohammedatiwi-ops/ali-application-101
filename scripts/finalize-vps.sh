@@ -74,8 +74,9 @@ docker compose $COMPOSE_FILES up -d --force-recreate
 echo ""
 echo "=== 5) Wait for app ==="
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-  if curl -sf http://127.0.0.1:9000/login >/dev/null 2>&1; then
-    echo "App is up on :9000"
+  if curl -sf http://127.0.0.1:9000/login >/dev/null 2>&1 \
+    || docker exec modernity-gate wget -qO- http://127.0.0.1:9000/login >/dev/null 2>&1; then
+    echo "App is up."
     break
   fi
   if [ "$i" = "15" ]; then
