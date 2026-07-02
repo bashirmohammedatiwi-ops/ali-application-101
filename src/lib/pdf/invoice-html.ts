@@ -59,23 +59,29 @@ export async function buildInvoiceHtml(data: InvoiceHtmlInput): Promise<string> 
     invoice.markup > 0
       ? `عمولة المكتب (${formatMarkupPercent(invoice.markup)})`
       : "عمولة المكتب";
-  const markupValue =
-    invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—";
+  const markupValue = invoice.markup > 0 ? `+ ${fmt(markupAmount)}` : "—";
 
   const fontCss = await getEmbeddedFontCss();
+  const logoHtml = logoDataUri
+    ? `<img src="${logoDataUri}" alt="logo">`
+    : `<span class="logo-letter">م</span>`;
+
+  const productImgHtml = productImageDataUri
+    ? `<img class="thumb" src="${productImageDataUri}" alt="">`
+    : `<span class="thumb-ph">—</span>`;
 
   return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 ${fontCss}
 :root {
   --primary: #3C3C3B;
   --accent: #E85C24;
+  --accent-soft: #FFF4EF;
   --muted: #8A8580;
-  --border: #E5E0DA;
+  --border: #E8E3DD;
   --ink: #2A2928;
   --paper: #FAF8F6;
 }
@@ -96,133 +102,174 @@ html, body {
 }
 .page { width: 100%; }
 
+/* ── Header ── */
+.top-bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), #f09060);
+  border-radius: 2px;
+  margin-bottom: 18px;
+}
 .header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
   align-items: center;
-  background: var(--primary);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-  color: #fff;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
 }
-.badge {
-  background: var(--accent);
-  border-radius: 6px;
-  padding: 10px 14px;
-  text-align: center;
-  min-width: 90px;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
-.badge-title { font-size: 12pt; font-weight: 700; }
-.badge-sub { font-size: 8pt; opacity: 0.85; margin-top: 2px; }
-.company { text-align: right; padding: 0 8px; }
-.company-name { font-size: 14pt; font-weight: 700; line-height: 1.35; }
-.company-sub { font-size: 8pt; color: #ccc; margin-top: 3px; line-height: 1.5; }
 .logo-wrap {
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: #fff;
+  border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-  padding: 6px;
+  box-shadow: 0 2px 8px rgba(60,60,59,0.1);
+  padding: 8px;
 }
 .logo-wrap img {
   width: 100%;
   height: 100%;
-  border-radius: 0;
   object-fit: contain;
-  background: transparent;
 }
-.logo-ph {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  font-size: 18pt;
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-}
-
-.meta {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.meta-box {
-  background: var(--paper);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px;
-  text-align: right;
-}
-.meta-label { font-size: 7pt; color: var(--muted); margin-bottom: 4px; }
-.meta-value { font-size: 9pt; font-weight: 700; line-height: 1.4; word-break: break-word; }
-
-.block-title {
-  font-size: 10pt;
+.logo-letter {
+  font-size: 22pt;
   font-weight: 700;
   color: var(--accent);
-  text-align: right;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 2px solid var(--accent);
+  line-height: 1;
+}
+.brand-text { text-align: right; }
+.company-name {
+  font-size: 15pt;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.company-line {
+  font-size: 8.5pt;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.invoice-id {
+  text-align: left;
+  min-width: 160px;
+}
+.invoice-id-label {
+  font-size: 8pt;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.invoice-id-number {
+  font-size: 16pt;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.invoice-id-date {
+  font-size: 9pt;
+  color: var(--ink);
+  font-weight: 700;
 }
 
-.customer {
+/* ── Info strip ── */
+.info-strip {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.info-card {
   background: var(--paper);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 14px;
+  border-radius: 8px;
+  padding: 12px 14px;
 }
-.field {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 8px;
-  padding: 6px 0;
+.info-card-title {
+  font-size: 8.5pt;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
-  align-items: start;
 }
-.field:last-child { border-bottom: none; }
-.field-label { font-size: 8pt; color: var(--muted); text-align: right; }
-.field-value { font-size: 9pt; font-weight: 700; text-align: right; line-height: 1.45; word-break: break-word; }
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.field { text-align: right; }
+.field.full { grid-column: 1 / -1; }
+.field-label {
+  font-size: 7.5pt;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.field-value {
+  font-size: 9.5pt;
+  font-weight: 700;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.meta-item { text-align: right; }
+.meta-label { font-size: 7.5pt; color: var(--muted); margin-bottom: 2px; }
+.meta-value { font-size: 9.5pt; font-weight: 700; }
 
+/* ── Product table ── */
+.section-title {
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+  padding-right: 10px;
+  border-right: 3px solid var(--accent);
+}
 table.products {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
+  margin-bottom: 18px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 14px;
 }
-table.products th {
+table.products thead th {
   background: var(--primary);
   color: #fff;
   font-size: 8pt;
   font-weight: 700;
-  padding: 8px 6px;
+  padding: 9px 8px;
   text-align: center;
 }
-table.products td {
+table.products tbody td {
   font-size: 9pt;
-  padding: 10px 6px;
+  padding: 12px 8px;
   text-align: center;
   vertical-align: middle;
   border-top: 1px solid var(--border);
+  background: #fff;
 }
+table.products tbody tr:nth-child(even) td { background: var(--paper); }
+.col-name { text-align: right !important; padding-right: 12px !important; }
 .product-name {
-  text-align: right;
+  font-size: 9.5pt;
+  font-weight: 700;
   line-height: 1.45;
   word-break: break-word;
 }
@@ -233,176 +280,179 @@ table.products td {
   direction: ltr;
   unicode-bidi: isolate;
   text-align: left;
+  font-weight: 400;
 }
 .thumb {
-  width: 44px;
-  height: 44px;
-  border-radius: 4px;
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
   object-fit: cover;
   border: 1px solid var(--border);
 }
 .thumb-ph {
-  width: 44px;
-  height: 44px;
-  border-radius: 4px;
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
   border: 1px dashed var(--border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
-  font-size: 7pt;
+  font-size: 8pt;
+  background: var(--paper);
 }
+.qty-cell { white-space: nowrap; }
 
+/* ── Bottom panels ── */
 .bottom {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 .panel {
-  background: var(--paper);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px;
+  border-radius: 8px;
+  overflow: hidden;
 }
-.panel-title {
-  font-size: 9pt;
+.panel-head {
+  background: var(--primary);
+  color: #fff;
+  font-size: 8.5pt;
   font-weight: 700;
-  color: var(--primary);
+  padding: 8px 12px;
   text-align: right;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
 }
+.panel-body { padding: 10px 12px; background: #fff; }
 .spec-row, .money-row {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  padding: 5px 0;
+  gap: 10px;
+  padding: 6px 0;
   font-size: 8.5pt;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px dashed var(--border);
 }
-.spec-row:last-child, .money-row:last-child { border-bottom: none; }
-.spec-label { color: var(--muted); }
-.spec-value { font-weight: 700; text-align: left; }
-.money-row span:first-child { color: var(--muted); text-align: right; flex: 1; }
-.money-row.accent span:first-child { color: var(--accent); }
-.money-row .num { font-weight: 700; white-space: nowrap; }
+.spec-row:last-of-type, .money-row:last-of-type { border-bottom: none; }
+.spec-label, .money-row > span:first-child { color: var(--muted); }
+.spec-value, .money-row .num { font-weight: 700; }
+.money-row.accent > span:first-child { color: var(--accent); }
 .note {
   margin-top: 8px;
+  padding: 8px;
+  background: var(--accent-soft);
+  border-radius: 6px;
   font-size: 8pt;
-  color: var(--muted);
+  color: var(--ink);
   text-align: right;
   line-height: 1.5;
 }
-.grand {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 2px solid var(--accent);
+.grand-box {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--accent-soft);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
-.grand-label { font-size: 10pt; font-weight: 700; color: var(--accent); }
-.grand-value { font-size: 12pt; font-weight: 700; color: var(--primary); white-space: nowrap; }
+.grand-label { font-size: 11pt; font-weight: 700; color: var(--primary); }
+.grand-value { font-size: 13pt; font-weight: 700; color: var(--accent); white-space: nowrap; }
 
+/* ── Footer ── */
 .footer {
   text-align: center;
-  padding-top: 12px;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
 }
-.footer-main { font-size: 9pt; font-weight: 700; margin-bottom: 4px; }
-.footer-sub { font-size: 7.5pt; color: var(--muted); line-height: 1.5; }
+.footer-main {
+  font-size: 9pt;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+.footer-sub { font-size: 7.5pt; color: var(--muted); line-height: 1.6; }
 </style>
 </head>
 <body>
 <div class="page">
+  <div class="top-bar"></div>
+
   <header class="header">
-    <div class="badge">
-      <div class="badge-title">فاتورة تسعير</div>
-      <div class="badge-sub">عرض سعر رسمي</div>
+    <div class="brand">
+      <div class="logo-wrap">${logoHtml}</div>
+      <div class="brand-text">
+        <div class="company-name">${esc(companyName)}</div>
+        <div class="company-line">${esc(companyAddress)}</div>
+        <div class="company-line">هاتف: <span class="num">${esc(companyPhone)}</span></div>
+      </div>
     </div>
-    <div class="company">
-      <div class="company-name">${esc(companyName)}</div>
-      <div class="company-sub">${esc(companyAddress)}</div>
-      <div class="company-sub">هاتف: <span class="num">${esc(companyPhone)}</span></div>
-    </div>
-    <div class="logo-wrap">
-      ${
-        logoDataUri
-          ? `<img src="${logoDataUri}" alt="logo">`
-          : `<div class="logo-ph">م</div>`
-      }
+    <div class="invoice-id">
+      <div class="invoice-id-label">رقم الفاتورة</div>
+      <div class="invoice-id-number num">${esc(invoice.invoiceNumber)}</div>
+      <div class="invoice-id-date">${esc(formatPdfDate(invoice.createdAt))}</div>
     </div>
   </header>
 
-  <section class="meta">
-    <div class="meta-box">
-      <div class="meta-label">رقم الفاتورة</div>
-      <div class="meta-value num">${esc(invoice.invoiceNumber)}</div>
+  <section class="info-strip">
+    <div class="info-card">
+      <div class="info-card-title">بيانات العميل</div>
+      <div class="field-grid">
+        <div class="field">
+          <div class="field-label">الاسم</div>
+          <div class="field-value">${esc(customer.name)}</div>
+        </div>
+        <div class="field">
+          <div class="field-label">الهاتف</div>
+          <div class="field-value num">${esc(customer.phone)}</div>
+        </div>
+        ${
+          location
+            ? `<div class="field full">
+          <div class="field-label">العنوان</div>
+          <div class="field-value">${esc(location)}</div>
+        </div>`
+            : ""
+        }
+      </div>
     </div>
-    <div class="meta-box">
-      <div class="meta-label">التاريخ</div>
-      <div class="meta-value">${esc(formatPdfDate(invoice.createdAt))}</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-label">رقم الطلب</div>
-      <div class="meta-value num">${esc(item.refNumber)}</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-label">العملة</div>
-      <div class="meta-value">${esc(currencyName)}</div>
+    <div class="info-card">
+      <div class="info-card-title">تفاصيل الطلب</div>
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">رقم الطلب</div>
+          <div class="meta-value num">${esc(item.refNumber)}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">العملة</div>
+          <div class="meta-value">${esc(currencyName)}</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <h2 class="block-title">بيانات العميل</h2>
-  <section class="customer">
-    <div class="field">
-      <span class="field-label">الاسم</span>
-      <span class="field-value">${esc(customer.name)}</span>
-    </div>
-    <div class="field">
-      <span class="field-label">الهاتف</span>
-      <span class="field-value num">${esc(customer.phone)}</span>
-    </div>
-    ${
-      location
-        ? `<div class="field">
-      <span class="field-label">العنوان</span>
-      <span class="field-value">${esc(location)}</span>
-    </div>`
-        : ""
-    }
-  </section>
-
-  <h2 class="block-title">تفاصيل المنتج</h2>
+  <div class="section-title">تفاصيل المنتج</div>
   <table class="products">
     <thead>
       <tr>
-        <th style="width:28px">#</th>
-        <th style="width:52px">صورة</th>
-        <th>اسم المنتج</th>
-        <th style="width:72px">الكمية</th>
-        <th style="width:88px">سعر القطعة</th>
-        <th style="width:88px">المجموع</th>
+        <th style="width:32px">#</th>
+        <th style="width:60px">الصورة</th>
+        <th>المنتج</th>
+        <th style="width:80px">الكمية</th>
+        <th style="width:90px">سعر الوحدة</th>
+        <th style="width:90px">المجموع</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td class="num">1</td>
-        <td>
-          ${
-            productImageDataUri
-              ? `<img class="thumb" src="${productImageDataUri}" alt="">`
-              : `<span class="thumb-ph">—</span>`
-          }
-        </td>
-        <td>
+        <td>${productImgHtml}</td>
+        <td class="col-name">
           <div class="product-name">${esc(productName)}</div>
           ${productNameEn ? `<div class="product-name-en">${esc(productNameEn)}</div>` : ""}
         </td>
-        <td><span class="num">${esc(item.quantity)}</span> ${esc(unitLabel)}</td>
+        <td class="qty-cell"><span class="num">${esc(item.quantity)}</span> ${esc(unitLabel)}</td>
         <td class="num">${esc(fmt(item.unitPrice ?? 0))}</td>
         <td class="num">${esc(fmt(invoice.subtotal))}</td>
       </tr>
@@ -411,22 +461,22 @@ table.products td {
 
   <section class="bottom">
     <div class="panel">
-      <div class="panel-title">الوزن والمواصفات</div>
-      ${specs.join("") || `<div class="note">—</div>`}
-      ${
-        item.pricerNotes
-          ? `<div class="note">ملاحظة: ${esc(item.pricerNotes)}</div>`
-          : ""
-      }
+      <div class="panel-head">الوزن والمواصفات</div>
+      <div class="panel-body">
+        ${specs.join("") || `<div class="note" style="margin-top:0;background:var(--paper)">لا توجد مواصفات إضافية</div>`}
+        ${item.pricerNotes ? `<div class="note">ملاحظة المُسعّر: ${esc(item.pricerNotes)}</div>` : ""}
+      </div>
     </div>
     <div class="panel">
-      <div class="panel-title">ملخص المبالغ</div>
-      ${moneyRow("تكلفة المنتج", fmt(invoice.subtotal))}
-      ${moneyRow("أجور الشحن الداخلي", `+ ${fmt(invoice.shipping)}`)}
-      ${moneyRow(markupLabel, markupValue, invoice.markup > 0)}
-      <div class="grand">
-        <span class="grand-label">الإجمالي النهائي</span>
-        <span class="grand-value num">${esc(fmt(invoice.grandTotal))}</span>
+      <div class="panel-head">ملخص المبالغ</div>
+      <div class="panel-body">
+        ${moneyRow("تكلفة المنتج", fmt(invoice.subtotal))}
+        ${moneyRow("أجور الشحن الداخلي", `+ ${fmt(invoice.shipping)}`)}
+        ${moneyRow(markupLabel, markupValue, invoice.markup > 0)}
+        <div class="grand-box">
+          <span class="grand-label">الإجمالي النهائي</span>
+          <span class="grand-value num">${esc(fmt(invoice.grandTotal))}</span>
+        </div>
       </div>
     </div>
   </section>
