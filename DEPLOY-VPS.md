@@ -18,6 +18,31 @@
 
 ---
 
+## استكمال إعداد متوقف (منفذ 80 مشغول)
+
+إذا توقف `setup-new-vps.sh` عند nginx:
+
+```bash
+cd /opt/modernity-gate
+git pull
+sudo sh scripts/resume-setup.sh
+```
+
+أو يدوياً:
+
+```bash
+sudo sh scripts/fix-nginx-port.sh   # يحرر المنفذ 80 ويشغّل nginx
+./scripts/deploy-vps.sh             # يبني ويشغّل التطبيق
+```
+
+لمعرفة من يستخدم المنفذ 80:
+
+```bash
+sudo ss -tlnp | grep ':80 '
+```
+
+---
+
 ## 2) أول مرة على السيرفر
 
 اتصل بالسيرفر:

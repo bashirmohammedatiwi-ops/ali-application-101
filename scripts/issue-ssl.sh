@@ -25,7 +25,8 @@ certbot certonly --webroot -w /var/www/certbot \
 echo "=== Enabling HTTPS nginx config ==="
 cp deploy/nginx/modernitygate.conf /etc/nginx/sites-available/modernitygate.conf
 nginx -t
-systemctl reload nginx
+systemctl enable nginx
+systemctl restart nginx
 
 echo "=== Auto-renewal timer ==="
 systemctl enable certbot.timer 2>/dev/null || true

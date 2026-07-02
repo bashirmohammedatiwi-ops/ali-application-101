@@ -1,14 +1,13 @@
 #!/usr/bin/env sh
 # First-time VPS setup for modernitygate.com
 # Run ON THE SERVER as root (Ubuntu 22.04/24.04):
-#   curl -fsSL https://raw.githubusercontent.com/bashirmohammedatiwi-ops/ali-application-101/main/scripts/setup-new-vps.sh | sh
-# Or after git clone:
-#   sudo sh scripts/setup-new-vps.sh
+#   cd /opt/modernity-gate && sudo sh scripts/setup-new-vps.sh
 set -e
 
 DOMAIN="modernitygate.com"
 APP_DIR="${APP_DIR:-/opt/modernity-gate}"
 REPO_URL="${REPO_URL:-https://github.com/bashirmohammedatiwi-ops/ali-application-101.git}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Run as root: sudo sh scripts/setup-new-vps.sh"
@@ -53,11 +52,7 @@ if [ ! -f .env.production ]; then
 fi
 
 echo "=== 5. Nginx (HTTP bootstrap) ==="
-cp deploy/nginx/modernitygate.http.conf /etc/nginx/sites-available/modernitygate.conf
-ln -sf /etc/nginx/sites-available/modernitygate.conf /etc/nginx/sites-enabled/modernitygate.conf
-rm -f /etc/nginx/sites-enabled/default
-nginx -t
-systemctl reload nginx
+sh "$SCRIPT_DIR/fix-nginx-port.sh"
 
 echo "=== 6. Build & start app ==="
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
@@ -72,7 +67,7 @@ echo "     $DOMAIN      -> $(curl -4 -s ifconfig.me 2>/dev/null || echo 'YOUR_IP
 echo "     www.$DOMAIN  -> same IP"
 echo ""
 echo "2. Wait for DNS (5–30 min), then issue SSL:"
-echo "     cd $APP_DIR && sudo sh scripts/issue-ssl.sh"
+echo "     cd $APP_DIR && sudo CERTBOT_EMAIL=you@email.com sh scripts/issue-ssl.sh"
 echo ""
 echo "3. After SSL, set SEED_ON_START=false in .env.production and redeploy:"
 echo "     cd $APP_DIR && ./scripts/deploy-vps.sh"
