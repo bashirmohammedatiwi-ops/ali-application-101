@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["puppeteer-core", "sharp", "better-sqlite3"],
   compress: true,
   poweredByHeader: false,
   images: {

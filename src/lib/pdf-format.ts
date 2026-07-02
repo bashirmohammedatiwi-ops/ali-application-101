@@ -1,10 +1,25 @@
+const ARABIC_MONTHS = [
+  "يناير",
+  "فبراير",
+  "مارس",
+  "أبريل",
+  "مايو",
+  "يونيو",
+  "يوليو",
+  "أغسطس",
+  "سبتمبر",
+  "أكتوبر",
+  "نوفمبر",
+  "ديسمبر",
+] as const;
+
+/** Arabic month name + day/year — does not rely on server Intl locale data. */
 export function formatPdfDate(date: Date | string) {
-  return new Intl.DateTimeFormat("ar-IQ", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    numberingSystem: "latn",
-  }).format(new Date(date));
+  const d = new Date(date);
+  const day = d.getDate();
+  const month = ARABIC_MONTHS[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month} ${year}`;
 }
 
 export function formatPdfAmount(amount: number, currency: string): string {

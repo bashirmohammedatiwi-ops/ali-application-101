@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { renderToBuffer } from "@react-pdf/renderer";
-import { InvoiceDocument } from "@/components/pdf/invoice-document";
 import { PDF_TEMPLATE_VERSION } from "@/lib/pdf-constants";
 import { getOrCreateSettings } from "@/lib/orders";
 import { UNITS } from "@/lib/constants";
-import { resolveLogoPath, resolveProductImageForPdf } from "@/lib/pdf-assets";
-import { registerPdfFonts } from "@/lib/pdf-fonts";
+import { resolveLogoDataUri, resolveProductImageForPdf } from "@/lib/pdf-assets";
 import { normalizeCurrency } from "@/lib/currency";
 import { prepareInvoiceForPdfDisplay } from "@/lib/pdf-invoice";
+import { buildInvoiceHtml } from "@/lib/pdf/invoice-html";
+import { renderHtmlToPdf } from "@/lib/pdf/render-chromium-pdf";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -41,7 +40,6 @@ export async function GET(
   }
 
   try {
-    registerPdfFonts();
     const settings = await getOrCreateSettings();
     const item = invoice.orderItem;
     const customer = item.request.customer;
@@ -53,21 +51,23 @@ export async function GET(
       usdToIqdRate: settings.usdToIqdRate,
     };
     const pdfData = prepareInvoiceForPdfDisplay(invoice, item, displayCurrency, rates);
-    const productImageSrc = await resolveProductImageForPdf(item.images);
-    const logoSrc = resolveLogoPath();
+    const [productImageDataUri, logoDataUri] = await Promise.all([
+      resolveProductImageForPdf(item.images),
+      resolveLogoDataUri(),
+    ]);
 
-    const buffer = await renderToBuffer(
-      InvoiceDocument({
-        invoice: pdfData.invoice,
-        item: pdfData.item,
-        customer,
-        settings,
-        unitLabel: UNITS[pdfData.item.unit].ar,
-        logoSrc,
-        productImageSrc,
-      })
-    );
+    const html = await buildInvoiceHtml({
+      invoice: pdfData.invoice,
+      item: pdfData.item,
+      customer,
+      settings,
+      unitLabel: UNITS[pdfData.item.unit].ar,
+      markupAmount: pdfData.markupAmount,
+      logoDataUri,
+      productImageDataUri,
+    });
 
+    const buffer = await renderHtmlToPdf(html);
     const version = new Date(invoice.updatedAt).getTime();
 
     return new NextResponse(new Uint8Array(buffer), {

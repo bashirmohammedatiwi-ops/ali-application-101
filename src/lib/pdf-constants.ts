@@ -1,2 +1,2 @@
 /** Bump when PDF layout changes — included in URLs to bust mobile browser cache. */
-export const PDF_TEMPLATE_VERSION = "2026-07-v9";
+export const PDF_TEMPLATE_VERSION = "2026-07-v10-html-2";

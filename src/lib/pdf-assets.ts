@@ -21,6 +21,21 @@ export function resolveLogoPath(): string | null {
   return candidates.find((p) => fs.existsSync(p)) ?? null;
 }
 
+export async function resolveLogoDataUri(): Promise<string | null> {
+  const filePath = resolveLogoPath();
+  if (!filePath) return null;
+
+  try {
+    const input = await readFile(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    const mime = ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" : "image/png";
+    return `data:${mime};base64,${input.toString("base64")}`;
+  } catch (error) {
+    console.error("[pdf] logo read failed:", error);
+    return null;
+  }
+}
+
 /** PDFKit only embeds JPEG/PNG — uploads are WebP, so convert for the invoice. */
 export async function resolveProductImageForPdf(
   urls?: { url: string }[]
